@@ -1,0 +1,6 @@
+{
+  "appId": "com.brightsteps.learninggames",
+  "appName": "BrightSteps",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}

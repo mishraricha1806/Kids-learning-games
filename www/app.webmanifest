@@ -1,0 +1,19 @@
+{
+  "name": "BrightSteps Kids Learning Games",
+  "short_name": "BrightSteps",
+  "description": "Playful learning games for children ages 1 to 9.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#fffdf8",
+  "theme_color": "#3f8cff",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

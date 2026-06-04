@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#3f8cff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BrightSteps">
+    <title>BrightSteps Kids Learning Games</title>
+    <link rel="manifest" href="app.webmanifest">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar" aria-label="Game library">
+        <div class="brand">
+          <svg class="brand-mark" viewBox="0 0 80 80" aria-hidden="true">
+            <rect x="8" y="18" width="64" height="48" rx="10" fill="#ffffff"></rect>
+            <circle cx="25" cy="37" r="7" fill="#e85d75"></circle>
+            <circle cx="55" cy="37" r="7" fill="#3f8cff"></circle>
+            <path d="M24 51c8 8 24 8 32 0" fill="none" stroke="#25324d" stroke-width="5" stroke-linecap="round"></path>
+            <path d="M18 17 11 7M62 17l7-10" stroke="#25324d" stroke-width="5" stroke-linecap="round"></path>
+          </svg>
+          <div>
+            <h1>BrightSteps</h1>
+            <p>Ages 1-9</p>
+          </div>
+        </div>
+
+        <button class="install-button" id="installButton" hidden>Install App</button>
+
+        <section class="age-picker" aria-label="Age range">
+          <button class="age-button is-active" data-age="tiny">1-3</button>
+          <button class="age-button" data-age="little">4-6</button>
+          <button class="age-button" data-age="big">7-9</button>
+        </section>
+
+        <nav class="game-list" id="gameList" aria-label="Games"></nav>
+
+        <section class="parent-note" aria-label="Parent insight">
+          <h2>Parent view</h2>
+          <p id="parentNote">Playful taps, bright feedback, and short rounds help toddlers learn colors, shapes, and words.</p>
+        </section>
+      </aside>
+
+      <section class="stage" aria-live="polite">
+        <header class="stage-header">
+          <div>
+            <p class="eyebrow" id="categoryLabel">Colors</p>
+            <h2 id="gameTitle">Color Pop</h2>
+          </div>
+          <div class="score-card">
+            <span>Stars</span>
+            <strong id="stars">0</strong>
+          </div>
+        </header>
+
+        <section class="activity-card" id="activity" aria-label="Current game"></section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

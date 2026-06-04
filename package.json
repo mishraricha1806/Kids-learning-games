@@ -1,0 +1,21 @@
+{
+  "name": "brightsteps-kids-learning-games",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multi-category learning games for children ages 1 to 9.",
+  "scripts": {
+    "start": "python3 -m http.server 4174",
+    "build": "node scripts/build-web.mjs",
+    "cap:add:ios": "npx cap add ios",
+    "cap:add:android": "npx cap add android",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:open:ios": "npx cap open ios",
+    "cap:open:android": "npx cap open android"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0"
+  }
+}

@@ -59,6 +59,36 @@ const games = {
       meta: "Name happy, sad, calm, and surprised",
       parent: "Emotion naming supports social language and gives children words for what they notice and feel.",
       type: "feelings"
+    },
+    {
+      id: "shape-catcher",
+      title: "Shape Catcher",
+      category: "Action",
+      icon: "G",
+      color: "#2eb872",
+      meta: "Catch the falling color or shape",
+      parent: "A moving catch game keeps toddlers engaged while practicing color and shape recognition.",
+      type: "shapeCatcher"
+    },
+    {
+      id: "star-tap",
+      title: "Star Tap",
+      category: "Action",
+      icon: "*",
+      color: "#f5a623",
+      meta: "Tap and count glowing stars",
+      parent: "A gentle animated counting game helps toddlers practice counting with satisfying visual feedback.",
+      type: "starTap"
+    },
+    {
+      id: "bubble-garden",
+      title: "Bubble Garden",
+      category: "Quest",
+      icon: "Q",
+      color: "#3f8cff",
+      meta: "Pop 10 target-color bubbles",
+      parent: "A longer color quest gives toddlers repeated practice while the progress bar keeps them motivated.",
+      type: "bubbleGarden"
     }
   ],
   little: [
@@ -131,6 +161,36 @@ const games = {
       meta: "Pop the right falling letter",
       parent: "Falling letter play adds movement while practicing letter recognition and quick visual scanning.",
       type: "letterBalloons"
+    },
+    {
+      id: "number-muncher",
+      title: "Number Muncher",
+      category: "Action",
+      icon: "U",
+      color: "#2eb872",
+      meta: "Feed the monster the right number",
+      parent: "Moving number snacks make counting and simple addition feel playful and energetic.",
+      type: "numberMuncher"
+    },
+    {
+      id: "alphabet-train",
+      title: "Alphabet Train",
+      category: "Action",
+      icon: "T",
+      color: "#3f8cff",
+      meta: "Pick the next letter car",
+      parent: "The moving train format adds anticipation while children practice alphabet order.",
+      type: "alphabetTrain"
+    },
+    {
+      id: "path-quest",
+      title: "Path Quest",
+      category: "Quest",
+      icon: "Q",
+      color: "#8067dc",
+      meta: "Follow 12 stepping stones",
+      parent: "A longer ordered-path game builds sequencing, attention, and persistence through a complete route.",
+      type: "pathQuest"
     }
   ],
   big: [
@@ -203,6 +263,36 @@ const games = {
       meta: "Pop letters to spell words",
       parent: "This action spelling game keeps older kids engaged while reinforcing letter order and word memory.",
       type: "spellingBalloons"
+    },
+    {
+      id: "rocket-math",
+      title: "Rocket Math",
+      category: "Action",
+      icon: "R",
+      color: "#8067dc",
+      meta: "Solve to launch the rocket",
+      parent: "Animated launches reward correct math answers and make practice feel like progress.",
+      type: "rocketMath"
+    },
+    {
+      id: "word-comets",
+      title: "Word Comets",
+      category: "Action",
+      icon: "C",
+      color: "#00a6a6",
+      meta: "Catch the correct meaning word",
+      parent: "Fast-moving word choices make vocabulary practice feel active while still building comprehension.",
+      type: "wordComets"
+    },
+    {
+      id: "quest-island",
+      title: "Quest Island",
+      category: "Quest",
+      icon: "I",
+      color: "#f5a623",
+      meta: "Collect 6 gems with mixed challenges",
+      parent: "A multi-step learning quest blends math, vocabulary, spelling, and logic into a longer play session.",
+      type: "questIsland"
     }
   ]
 };
@@ -235,14 +325,22 @@ const shapes = [
   { name: "star", svg: '<path d="m50 10 11 25 27 3-20 18 6 27-24-14-24 14 6-27-20-18 27-3Z" fill="#f5c542"></path>' }
 ];
 
+const defaultKidFace = "assets/kid-face-only.jpeg";
+
 const state = {
   age: "tiny",
   gameId: "color-pop",
   stars: 0,
+  totalStars: readNumber("brightstepsTotalStars", 0),
+  nextMilestone: readNumber("brightstepsNextMilestone", 50),
   round: {},
   recent: {},
   memory: { open: [], matched: [] },
   trace: { next: 1, done: [] },
+  star: { target: 0, tapped: 0 },
+  bubble: { target: "", popped: 0, goal: 10 },
+  path: { next: 1, done: [] },
+  quest: { step: 0, gems: 0, round: null },
   word: { target: "", slots: [] },
   balloon: { target: "", slots: [] }
 };
@@ -250,10 +348,14 @@ const state = {
 const gameList = document.querySelector("#gameList");
 const activity = document.querySelector("#activity");
 const stars = document.querySelector("#stars");
+const totalStars = document.querySelector("#totalStars");
 const gameTitle = document.querySelector("#gameTitle");
 const categoryLabel = document.querySelector("#categoryLabel");
 const parentNote = document.querySelector("#parentNote");
 const installButton = document.querySelector("#installButton");
+const happyPhotoInput = document.querySelector("#happyPhotoInput");
+const sadPhotoInput = document.querySelector("#sadPhotoInput");
+const clearPhotosButton = document.querySelector("#clearPhotosButton");
 let deferredInstallPrompt = null;
 
 if ("serviceWorker" in navigator) {
@@ -276,6 +378,17 @@ installButton.addEventListener("click", async () => {
   installButton.hidden = true;
 });
 
+happyPhotoInput.addEventListener("change", () => saveReactionPhoto(happyPhotoInput, "brightstepsHappyPhoto"));
+sadPhotoInput.addEventListener("change", () => saveReactionPhoto(sadPhotoInput, "brightstepsSadPhoto"));
+clearPhotosButton.addEventListener("click", () => {
+  try {
+    window.localStorage.removeItem("brightstepsHappyPhoto");
+    window.localStorage.removeItem("brightstepsSadPhoto");
+  } catch {}
+  happyPhotoInput.value = "";
+  sadPhotoInput.value = "";
+});
+
 document.querySelectorAll(".age-button").forEach((button) => {
   button.addEventListener("click", () => {
     state.age = button.dataset.age;
@@ -283,6 +396,10 @@ document.querySelectorAll(".age-button").forEach((button) => {
     state.stars = 0;
     state.memory = { open: [], matched: [] };
     state.trace = { next: 1, done: [] };
+    state.star = { target: 0, tapped: 0 };
+    state.bubble = { target: "", popped: 0, goal: 10 };
+    state.path = { next: 1, done: [] };
+    state.quest = { step: 0, gems: 0, round: null };
     state.word = { target: "", slots: [] };
     state.balloon = { target: "", slots: [] };
     render();
@@ -304,9 +421,56 @@ function speak(text) {
 
 function cheer(message) {
   state.stars += 1;
+  state.totalStars += 1;
   stars.textContent = state.stars;
+  totalStars.textContent = state.totalStars;
+  writeNumber("brightstepsTotalStars", state.totalStars);
   const feedback = document.querySelector("#feedback");
   if (feedback) feedback.textContent = message;
+  showHappySuccess(message);
+  if (state.totalStars >= state.nextMilestone) {
+    showMilestoneCelebration(state.nextMilestone);
+    state.nextMilestone += 50;
+    writeNumber("brightstepsNextMilestone", state.nextMilestone);
+  }
+}
+
+function saveReactionPhoto(input, key) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    try {
+      window.localStorage.setItem(key, String(reader.result));
+    } catch {
+      const feedback = document.querySelector("#feedback");
+      if (feedback) feedback.textContent = "Photo is too large";
+    }
+  });
+  reader.readAsDataURL(file);
+}
+
+function readText(key) {
+  try {
+    return window.localStorage.getItem(key) || "";
+  } catch {
+    return "";
+  }
+}
+
+function readNumber(key, fallback) {
+  try {
+    const value = Number(window.localStorage.getItem(key));
+    return Number.isFinite(value) && value > 0 ? value : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeNumber(key, value) {
+  try {
+    window.localStorage.setItem(key, String(value));
+  } catch {}
 }
 
 function shuffle(items) {
@@ -333,6 +497,7 @@ function render() {
   categoryLabel.textContent = game.category;
   parentNote.textContent = game.parent;
   stars.textContent = state.stars;
+  totalStars.textContent = state.totalStars;
 
   if (game.type === "colors") renderColors();
   if (game.type === "shapes") renderShapes();
@@ -340,6 +505,9 @@ function render() {
   if (game.type === "animals") renderAnimals();
   if (game.type === "sizes") renderSizes();
   if (game.type === "feelings") renderFeelings();
+  if (game.type === "shapeCatcher") renderShapeCatcher();
+  if (game.type === "starTap") renderStarTap();
+  if (game.type === "bubbleGarden") renderBubbleGarden();
   if (game.type === "letters") renderLetters();
   if (game.type === "patterns") renderPatterns();
   if (game.type === "memory") renderMemory();
@@ -347,6 +515,9 @@ function render() {
   if (game.type === "odd") renderOdd();
   if (game.type === "trace") renderTrace();
   if (game.type === "letterBalloons") renderLetterBalloons();
+  if (game.type === "numberMuncher") renderNumberMuncher();
+  if (game.type === "alphabetTrain") renderAlphabetTrain();
+  if (game.type === "pathQuest") renderPathQuest();
   if (game.type === "math") renderMath();
   if (game.type === "words") renderWords();
   if (game.type === "sort") renderSort();
@@ -354,6 +525,9 @@ function render() {
   if (game.type === "skip") renderSkip();
   if (game.type === "vocab") renderVocab();
   if (game.type === "spellingBalloons") renderSpellingBalloons();
+  if (game.type === "rocketMath") renderRocketMath();
+  if (game.type === "wordComets") renderWordComets();
+  if (game.type === "questIsland") renderQuestIsland();
 }
 
 function renderChrome() {
@@ -377,6 +551,10 @@ function renderChrome() {
       state.stars = 0;
       state.memory = { open: [], matched: [] };
       state.trace = { next: 1, done: [] };
+      state.star = { target: 0, tapped: 0 };
+      state.bubble = { target: "", popped: 0, goal: 10 };
+      state.path = { next: 1, done: [] };
+      state.quest = { step: 0, gems: 0, round: null };
       state.word = { target: "", slots: [] };
       state.balloon = { target: "", slots: [] };
       render();
@@ -500,6 +678,97 @@ function renderFeelings() {
     </div>
   `);
   bindAnswers(target.name, renderFeelings);
+}
+
+function renderShapeCatcher() {
+  const rounds = [
+    { prompt: "Catch red", answer: "red", mode: "color" },
+    { prompt: "Catch blue", answer: "blue", mode: "color" },
+    { prompt: "Catch green", answer: "green", mode: "color" },
+    { prompt: "Catch yellow", answer: "yellow", mode: "color" },
+    { prompt: "Catch circle", answer: "circle", mode: "shape" },
+    { prompt: "Catch square", answer: "square", mode: "shape" },
+    { prompt: "Catch triangle", answer: "triangle", mode: "shape" },
+    { prompt: "Catch star", answer: "star", mode: "shape" }
+  ];
+  const round = pickFresh("shapeCatcher", rounds, (item) => item.prompt);
+  const values = round.mode === "color" ? palettes.map((color) => color.name) : shapes.map((shape) => shape.name);
+  const choices = shuffle([round.answer, ...shuffle(values.filter((item) => item !== round.answer)).slice(0, 4)]);
+  shell(round.prompt, movingStage(choices, round.answer, "catch"));
+  bindMovingAnswers(round.answer, renderShapeCatcher);
+}
+
+function renderStarTap() {
+  if (!state.star.target) {
+    state.star.target = pickFresh("starTap", [2, 3, 4, 5]);
+    state.star.tapped = 0;
+  }
+  shell(`Tap ${state.star.target} stars`, `
+    <div class="star-status">
+      <span>${state.star.tapped} of ${state.star.target}</span>
+    </div>
+    <div class="star-stage">
+      ${Array.from({ length: 8 }, (_, index) => `
+        <button class="tap-star" style="--star-x:${8 + (index % 4) * 23}%;--star-y:${16 + Math.floor(index / 4) * 42}%;--star-delay:${index * -0.25}s" aria-label="Tap star">
+          *
+        </button>
+      `).join("")}
+    </div>
+  `);
+  activity.querySelectorAll(".tap-star").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.classList.contains("is-collected")) return;
+      button.classList.add("is-collected");
+      state.star.tapped += 1;
+      const status = document.querySelector(".star-status span");
+      if (status) status.textContent = `${state.star.tapped} of ${state.star.target}`;
+      if (state.star.tapped === state.star.target) {
+        cheer("Stars counted");
+        state.star = { target: 0, tapped: 0 };
+        setTimeout(renderStarTap, 750);
+      }
+    });
+  });
+}
+
+function renderBubbleGarden() {
+  if (!state.bubble.target) {
+    state.bubble.target = pickFresh("bubbleGarden", palettes, (color) => color.name).name;
+    state.bubble.popped = 0;
+    state.bubble.goal = 10;
+  }
+  const choices = Array.from({ length: 16 }, (_, index) => palettes[index % palettes.length].name);
+  shell(`Pop ${state.bubble.target} bubbles`, `
+    <div class="quest-progress">
+      <span>${state.bubble.popped} / ${state.bubble.goal}</span>
+      <span class="progress-track"><span style="width:${(state.bubble.popped / state.bubble.goal) * 100}%"></span></span>
+    </div>
+    <div class="bubble-garden">
+      ${shuffle(choices).map((colorName, index) => {
+        const color = palettes.find((item) => item.name === colorName);
+        return `
+          <button class="quest-bubble" style="--bubble-x:${6 + (index % 4) * 23}%;--bubble-y:${10 + Math.floor(index / 4) * 21}%;--bubble-delay:${index * -0.3}s;--bubble-color:${color.value}" data-bubble="${colorName}" aria-label="${colorName} bubble"></button>
+        `;
+      }).join("")}
+    </div>
+  `);
+  activity.querySelectorAll("[data-bubble]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.dataset.bubble === state.bubble.target) {
+        button.classList.add("is-popped");
+        state.bubble.popped += 1;
+        cheer(state.bubble.popped === state.bubble.goal ? "Garden complete" : "Bubble pop");
+        if (state.bubble.popped >= state.bubble.goal) {
+          state.bubble = { target: "", popped: 0, goal: 10 };
+          setTimeout(renderBubbleGarden, 800);
+        } else {
+          setTimeout(renderBubbleGarden, 350);
+        }
+      } else {
+        markWrong(button);
+      }
+    });
+  });
 }
 
 function renderLetters() {
@@ -665,6 +934,98 @@ function renderLetterBalloons() {
   bindBalloonAnswers(target[0], renderLetterBalloons);
 }
 
+function renderNumberMuncher() {
+  const rounds = [
+    { prompt: "Feed 2", answer: "2", choices: ["1", "2", "3", "4", "5"] },
+    { prompt: "Feed 5", answer: "5", choices: ["2", "3", "4", "5", "6"] },
+    { prompt: "1 + 2", answer: "3", choices: ["2", "3", "4", "5", "6"] },
+    { prompt: "2 + 3", answer: "5", choices: ["3", "4", "5", "6", "7"] },
+    { prompt: "6 - 2", answer: "4", choices: ["2", "3", "4", "5", "6"] },
+    { prompt: "Count to 7", answer: "7", choices: ["5", "6", "7", "8", "9"] }
+  ];
+  const round = pickFresh("numberMuncher", rounds, (item) => item.prompt);
+  shell(`${round.prompt}: choose ${round.answer}`, `
+    <div class="muncher-stage">
+      <div class="muncher" aria-hidden="true">
+        <span class="muncher-eye"></span>
+        <span class="muncher-eye"></span>
+        <span class="muncher-mouth"></span>
+      </div>
+      <div class="muncher-snacks">
+        ${shuffle(round.choices).map((choice, index) => `
+          <button class="snack" style="--snack-x:${8 + index * 18}%;--snack-delay:${index * -0.55}s" data-moving="${choice}" aria-label="Feed ${choice}">
+            ${choice}
+          </button>
+        `).join("")}
+      </div>
+    </div>
+  `);
+  bindMovingAnswers(round.answer, renderNumberMuncher);
+}
+
+function renderAlphabetTrain() {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const startIndex = 1 + Math.floor(Math.random() * 20);
+  const shown = alphabet.slice(startIndex, startIndex + 3);
+  const answer = alphabet[startIndex + 3];
+  const choices = shuffle([answer, alphabet[startIndex + 4], alphabet[startIndex - 1], alphabet[startIndex + 5]]);
+  shell(`What comes after ${shown.join(", ")}?`, `
+    <div class="train-stage">
+      <div class="train-track" aria-hidden="true"></div>
+      <div class="train-engine" aria-hidden="true">A</div>
+      ${shown.map((letter, index) => `<div class="train-car fixed-car" style="--car-left:${24 + index * 16}%">${letter}</div>`).join("")}
+      <div class="train-choices">
+        ${choices.map((letter, index) => `
+          <button class="train-car choice-car" style="--car-delay:${index * -0.35}s" data-moving="${letter}" aria-label="${letter}">
+            ${letter}
+          </button>
+        `).join("")}
+      </div>
+    </div>
+  `);
+  bindMovingAnswers(answer, renderAlphabetTrain);
+}
+
+function renderPathQuest() {
+  if (!state.path.cards) {
+    state.path.cards = shuffle(Array.from({ length: 12 }, (_, index) => index + 1));
+    state.path.next = 1;
+    state.path.done = [];
+  }
+  shell(`Step on ${state.path.next}`, `
+    <div class="quest-progress">
+      <span>${state.path.done.length} / 12 stones</span>
+      <span class="progress-track"><span style="width:${(state.path.done.length / 12) * 100}%"></span></span>
+    </div>
+    <div class="path-stage">
+      <div class="path-hero" style="--hero-step:${state.path.done.length}" aria-hidden="true"></div>
+      ${state.path.cards.map((number, index) => `
+        <button class="path-stone ${state.path.done.includes(number) ? "is-done" : ""}" style="--stone-x:${8 + (index % 4) * 24}%;--stone-y:${10 + Math.floor(index / 4) * 28}%" data-path="${number}">
+          ${number}
+        </button>
+      `).join("")}
+    </div>
+  `);
+  activity.querySelectorAll("[data-path]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const number = Number(button.dataset.path);
+      if (number === state.path.next) {
+        state.path.done.push(number);
+        state.path.next += 1;
+        cheer(number === 12 ? "Path complete" : "Step");
+        if (number === 12) {
+          state.path = { next: 1, done: [] };
+          setTimeout(renderPathQuest, 850);
+        } else {
+          renderPathQuest();
+        }
+      } else {
+        markWrong(button);
+      }
+    });
+  });
+}
+
 function renderMath() {
   const rounds = Array.from({ length: 18 }, (_, index) => {
     const a = 3 + (index % 9);
@@ -747,14 +1108,52 @@ function renderSort() {
 }
 
 function renderClock() {
-  const hour = pickFresh("clock", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-  const answer = `${hour}:00`;
-  const options = shuffle([answer, `${hour === 12 ? 1 : hour + 1}:00`, `${hour === 1 ? 12 : hour - 1}:00`, `${hour}:30`]);
+  const times = [];
+  for (let hour = 1; hour <= 12; hour += 1) {
+    times.push({ hour, minute: 0 });
+    times.push({ hour, minute: 30 });
+  }
+  const time = pickFresh("clock", times, (item) => `${item.hour}:${item.minute}`);
+  const answer = formatTime(time.hour, time.minute);
+  const options = shuffle([
+    answer,
+    formatTime(time.hour === 12 ? 1 : time.hour + 1, time.minute),
+    formatTime(time.hour === 1 ? 12 : time.hour - 1, time.minute),
+    formatTime(time.hour, time.minute === 0 ? 30 : 0)
+  ]);
   shell("What time is it?", `
-    <div class="clock-face" aria-label="clock showing ${answer}">${answer}</div>
+    ${analogClock(time.hour, time.minute, answer)}
     <div class="number-line">${options.map((time) => `<button class="tile-button" data-answer="${time}">${time}</button>`).join("")}</div>
   `);
   bindAnswers(answer, renderClock);
+}
+
+function formatTime(hour, minute) {
+  return `${hour}:${String(minute).padStart(2, "0")}`;
+}
+
+function analogClock(hour, minute, answer) {
+  const hourAngle = (hour % 12) * 30 + minute * 0.5;
+  const minuteAngle = minute * 6;
+  const numbers = Array.from({ length: 12 }, (_, index) => {
+    const number = index + 1;
+    const angle = (number * 30 - 90) * Math.PI / 180;
+    const x = 100 + Math.cos(angle) * 76;
+    const y = 100 + Math.sin(angle) * 76;
+    return `<text x="${x.toFixed(1)}" y="${(y + 5).toFixed(1)}" text-anchor="middle">${number}</text>`;
+  }).join("");
+  return `
+    <div class="analog-clock-wrap">
+      <svg class="analog-clock" viewBox="0 0 200 200" aria-label="analog clock showing ${answer}">
+        <circle cx="100" cy="100" r="92" class="clock-outer"></circle>
+        <circle cx="100" cy="100" r="78" class="clock-inner"></circle>
+        ${numbers}
+        <line x1="100" y1="100" x2="100" y2="48" class="clock-hand hour-hand" transform="rotate(${hourAngle} 100 100)"></line>
+        <line x1="100" y1="100" x2="100" y2="30" class="clock-hand minute-hand" transform="rotate(${minuteAngle} 100 100)"></line>
+        <circle cx="100" cy="100" r="7" class="clock-pin"></circle>
+      </svg>
+    </div>
+  `;
 }
 
 function renderSkip() {
@@ -822,6 +1221,153 @@ function renderSpellingBalloons() {
   });
 }
 
+function renderRocketMath() {
+  const rounds = [
+    { prompt: "7 + 5", answer: "12", choices: ["10", "11", "12", "13"] },
+    { prompt: "9 + 6", answer: "15", choices: ["14", "15", "16", "17"] },
+    { prompt: "18 - 7", answer: "11", choices: ["9", "10", "11", "12"] },
+    { prompt: "4 x 2", answer: "8", choices: ["6", "7", "8", "10"] },
+    { prompt: "5 x 3", answer: "15", choices: ["12", "15", "18", "20"] },
+    { prompt: "24 / 4", answer: "6", choices: ["4", "5", "6", "8"] }
+  ];
+  const round = pickFresh("rocketMath", rounds, (item) => item.prompt);
+  shell(`${round.prompt} = ?`, `
+    <div class="rocket-stage">
+      <div class="stars-field" aria-hidden="true"></div>
+      <div class="rocket" id="rocketShip" aria-hidden="true">
+        <span class="rocket-window"></span>
+        <span class="rocket-flame"></span>
+      </div>
+      <div class="rocket-choices">
+        ${shuffle(round.choices).map((choice) => `<button class="tile-button rocket-choice" data-answer="${choice}">${choice}</button>`).join("")}
+      </div>
+    </div>
+  `);
+  activity.querySelectorAll("[data-answer]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.dataset.answer === round.answer) {
+        button.classList.add("is-correct");
+        document.querySelector("#rocketShip").classList.add("is-launched");
+        cheer("Launch");
+        setTimeout(renderRocketMath, 950);
+      } else {
+        markWrong(button);
+      }
+    });
+  });
+}
+
+function renderWordComets() {
+  const rounds = [
+    { prompt: "Catch the word that means fast", answer: "quick", choices: ["quick", "quiet", "heavy", "round"] },
+    { prompt: "Catch the word that means tiny", answer: "small", choices: ["small", "bright", "loud", "long"] },
+    { prompt: "Catch the word that means brave", answer: "bold", choices: ["bold", "late", "soft", "wide"] },
+    { prompt: "Catch the word that means begin", answer: "start", choices: ["start", "finish", "sleep", "carry"] },
+    { prompt: "Catch the word that means clever", answer: "smart", choices: ["smart", "cold", "empty", "slow"] },
+    { prompt: "Catch the word that means silent", answer: "quiet", choices: ["quiet", "messy", "sharp", "deep"] }
+  ];
+  const round = pickFresh("wordComets", rounds, (item) => item.prompt);
+  shell(round.prompt, `
+    <div class="comet-stage">
+      ${shuffle(round.choices).map((word, index) => `
+        <button class="comet-word" style="--comet-y:${12 + index * 18}%;--comet-delay:${index * -0.65}s" data-moving="${word}">
+          ${word}
+        </button>
+      `).join("")}
+    </div>
+  `);
+  bindMovingAnswers(round.answer, renderWordComets);
+}
+
+function renderQuestIsland() {
+  if (!state.quest.round) {
+    state.quest.round = nextIslandRound();
+  }
+  const round = state.quest.round;
+  shell(round.prompt, `
+    <div class="quest-progress">
+      <span>${state.quest.gems} / 6 gems</span>
+      <span class="progress-track gem-track"><span style="width:${(state.quest.gems / 6) * 100}%"></span></span>
+    </div>
+    <div class="island-stage">
+      <div class="island-map" aria-hidden="true">
+        ${Array.from({ length: 6 }, (_, index) => `<span class="gem ${index < state.quest.gems ? "is-collected" : ""}" style="--gem-left:${12 + index * 14}%"></span>`).join("")}
+        <span class="island-player" style="--island-step:${state.quest.gems}"></span>
+      </div>
+      <div class="choice-grid island-choices">
+        ${shuffle(round.options).map((option) => `<button class="choice-button" data-answer="${option}"><span class="label">${option}</span></button>`).join("")}
+      </div>
+    </div>
+  `);
+  activity.querySelectorAll("[data-answer]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.dataset.answer === round.answer) {
+        state.quest.gems += 1;
+        state.quest.step += 1;
+        state.quest.round = null;
+        button.classList.add("is-correct");
+        cheer(state.quest.gems === 6 ? "Quest complete" : "Gem found");
+        if (state.quest.gems === 6) {
+          state.quest = { step: 0, gems: 0, round: null };
+        }
+        setTimeout(renderQuestIsland, 800);
+      } else {
+        markWrong(button);
+      }
+    });
+  });
+}
+
+function nextIslandRound() {
+  const rounds = [
+    { prompt: "Island math: 8 + 7 = ?", answer: "15", options: ["13", "14", "15", "16"] },
+    { prompt: "Island math: 21 - 9 = ?", answer: "12", options: ["10", "11", "12", "13"] },
+    { prompt: "Pick the synonym for tiny", answer: "small", options: ["small", "bright", "quick", "wide"] },
+    { prompt: "Spell the animal", answer: "TIGER", options: ["TIGER", "TRIGE", "TIGRE", "TAGER"] },
+    { prompt: "Which is living?", answer: "flower", options: ["chair", "stone", "flower", "phone"] },
+    { prompt: "What comes next: 5, 10, 15, ?", answer: "20", options: ["18", "20", "25", "30"] },
+    { prompt: "Pick the rhyme for light", answer: "kite", options: ["kite", "leaf", "book", "moon"] },
+    { prompt: "Which means begin?", answer: "start", options: ["finish", "start", "sleep", "close"] }
+  ];
+  return pickFresh("questIsland", rounds, (round) => round.prompt);
+}
+
+function movingStage(items, answer, kind) {
+  return `
+    <div class="moving-stage ${kind === "catch" ? "catch-stage" : ""}">
+      ${items.map((item, index) => {
+        const color = palettes.find((palette) => palette.name === item);
+        const shape = shapes.find((shapeItem) => shapeItem.name === item);
+        const label = color ? item : shape ? item : String(item);
+        const visual = color
+          ? `<span class="falling-visual" style="background:${color.value}"></span>`
+          : shape
+            ? `<svg class="falling-visual" viewBox="0 0 100 100" aria-hidden="true">${shape.svg}</svg>`
+            : `<span class="falling-number">${item}</span>`;
+        return `
+          <button class="falling-item" style="--fall-x:${7 + index * 18}%;--fall-delay:${index * -0.7}s;--fall-speed:${4.7 + (index % 3) * 0.75}s" data-moving="${item}" aria-label="${label}">
+            ${visual}
+          </button>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function bindMovingAnswers(answer, nextRound) {
+  activity.querySelectorAll("[data-moving]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.dataset.moving === answer) {
+        button.classList.add("is-correct");
+        cheer("Caught");
+        setTimeout(nextRound, 450);
+      } else {
+        markWrong(button);
+      }
+    });
+  });
+}
+
 function balloonStage(letters, answer, built) {
   return `
     <div class="balloon-status">
@@ -868,9 +1414,83 @@ function bindAnswers(answer, nextRound) {
 
 function markWrong(button) {
   button.classList.add("is-wrong");
+  showSillyWrong();
   const feedback = document.querySelector("#feedback");
   if (feedback) feedback.textContent = "Try again";
   setTimeout(() => button.classList.remove("is-wrong"), 500);
+}
+
+function showHappySuccess(message) {
+  const oldPopup = activity.querySelector(".kid-success");
+  if (oldPopup) oldPopup.remove();
+  const happyPhoto = readText("brightstepsHappyPhoto") || defaultKidFace;
+  const popup = document.createElement("div");
+  popup.className = "kid-success";
+  popup.setAttribute("role", "status");
+  popup.innerHTML = `
+    <div class="kid-photo-wrap happy-wrap">
+      ${happyPhoto ? `<img src="${happyPhoto}" alt="Happy celebration">` : `<span class="fallback-happy" aria-hidden="true">Yay</span>`}
+      <span class="sparkle s1"></span>
+      <span class="sparkle s2"></span>
+      <span class="sparkle s3"></span>
+    </div>
+    <strong>${message}</strong>
+  `;
+  document.body.appendChild(popup);
+  setTimeout(() => popup.remove(), 1050);
+}
+
+function showSillyWrong() {
+  const oldPopup = activity.querySelector(".silly-wrong");
+  if (oldPopup) oldPopup.remove();
+  const sadPhoto = readText("brightstepsSadPhoto") || defaultKidFace;
+  const popup = document.createElement("div");
+  popup.className = "silly-wrong";
+  popup.setAttribute("role", "status");
+  popup.innerHTML = `
+    <div class="silly-face ${sadPhoto ? "photo-face" : ""}" aria-hidden="true">
+      ${sadPhoto ? `<img src="${sadPhoto}" alt="">` : `
+        <span class="silly-eye"></span>
+        <span class="silly-eye"></span>
+        <span class="silly-mouth">o</span>
+      `}
+      ${sadPhoto ? `<span class="blink-lid"></span>` : ""}
+    </div>
+    <strong>Oops!</strong>
+    <span>Try another one</span>
+    <i style="--pop-left:18%;--pop-delay:0s"></i>
+    <i style="--pop-left:38%;--pop-delay:0.08s"></i>
+    <i style="--pop-left:62%;--pop-delay:0.14s"></i>
+    <i style="--pop-left:82%;--pop-delay:0.2s"></i>
+  `;
+  activity.appendChild(popup);
+  setTimeout(() => popup.remove(), 1150);
+}
+
+function showMilestoneCelebration(milestone) {
+  const oldCelebration = document.querySelector(".milestone-celebration");
+  if (oldCelebration) oldCelebration.remove();
+  const celebration = document.createElement("div");
+  celebration.className = "milestone-celebration";
+  celebration.setAttribute("role", "status");
+  celebration.innerHTML = `
+    <div class="badge-burst" aria-hidden="true">
+      <span class="badge-ring"></span>
+      <span class="badge-core">${milestone}</span>
+      <i style="--spark-x:12%;--spark-delay:0s"></i>
+      <i style="--spark-x:28%;--spark-delay:0.05s"></i>
+      <i style="--spark-x:44%;--spark-delay:0.1s"></i>
+      <i style="--spark-x:60%;--spark-delay:0.15s"></i>
+      <i style="--spark-x:76%;--spark-delay:0.2s"></i>
+      <i style="--spark-x:90%;--spark-delay:0.25s"></i>
+    </div>
+    <h3>Milestone Unlocked</h3>
+    <p>Rainbow Champion badge</p>
+    <button class="tool-button" id="closeMilestone">Keep playing</button>
+  `;
+  document.body.appendChild(celebration);
+  celebration.querySelector("#closeMilestone").addEventListener("click", () => celebration.remove());
+  setTimeout(() => celebration.remove(), 6500);
 }
 
 render();

@@ -1,13 +1,11 @@
-const CACHE_NAME = "brightsteps-v12";
+const CACHE_NAME = "brightsteps-v13";
 const APP_FILES = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./app.webmanifest",
-  "./icon.svg",
-  "./assets/kid-face.jpeg",
-  "./assets/kid-face-only.jpeg"
+  "./icon.svg"
 ];
 
 self.addEventListener("install", (event) => {

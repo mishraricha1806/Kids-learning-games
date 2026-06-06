@@ -325,8 +325,6 @@ const shapes = [
   { name: "star", svg: '<path d="m50 10 11 25 27 3-20 18 6 27-24-14-24 14 6-27-20-18 27-3Z" fill="#f5c542"></path>' }
 ];
 
-const defaultKidFace = "assets/kid-face-only.jpeg";
-
 const state = {
   age: "tiny",
   gameId: "color-pop",
@@ -353,9 +351,6 @@ const gameTitle = document.querySelector("#gameTitle");
 const categoryLabel = document.querySelector("#categoryLabel");
 const parentNote = document.querySelector("#parentNote");
 const installButton = document.querySelector("#installButton");
-const happyPhotoInput = document.querySelector("#happyPhotoInput");
-const sadPhotoInput = document.querySelector("#sadPhotoInput");
-const clearPhotosButton = document.querySelector("#clearPhotosButton");
 let deferredInstallPrompt = null;
 
 if ("serviceWorker" in navigator) {
@@ -376,17 +371,6 @@ installButton.addEventListener("click", async () => {
   await deferredInstallPrompt.userChoice;
   deferredInstallPrompt = null;
   installButton.hidden = true;
-});
-
-happyPhotoInput.addEventListener("change", () => saveReactionPhoto(happyPhotoInput, "brightstepsHappyPhoto"));
-sadPhotoInput.addEventListener("change", () => saveReactionPhoto(sadPhotoInput, "brightstepsSadPhoto"));
-clearPhotosButton.addEventListener("click", () => {
-  try {
-    window.localStorage.removeItem("brightstepsHappyPhoto");
-    window.localStorage.removeItem("brightstepsSadPhoto");
-  } catch {}
-  happyPhotoInput.value = "";
-  sadPhotoInput.value = "";
 });
 
 document.querySelectorAll(".age-button").forEach((button) => {
@@ -432,29 +416,6 @@ function cheer(message) {
     showMilestoneCelebration(state.nextMilestone);
     state.nextMilestone += 50;
     writeNumber("brightstepsNextMilestone", state.nextMilestone);
-  }
-}
-
-function saveReactionPhoto(input, key) {
-  const file = input.files && input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.addEventListener("load", () => {
-    try {
-      window.localStorage.setItem(key, String(reader.result));
-    } catch {
-      const feedback = document.querySelector("#feedback");
-      if (feedback) feedback.textContent = "Photo is too large";
-    }
-  });
-  reader.readAsDataURL(file);
-}
-
-function readText(key) {
-  try {
-    return window.localStorage.getItem(key) || "";
-  } catch {
-    return "";
   }
 }
 
@@ -1423,17 +1384,11 @@ function markWrong(button) {
 function showHappySuccess(message) {
   const oldPopup = activity.querySelector(".kid-success");
   if (oldPopup) oldPopup.remove();
-  const happyPhoto = readText("brightstepsHappyPhoto") || defaultKidFace;
   const popup = document.createElement("div");
   popup.className = "kid-success";
   popup.setAttribute("role", "status");
   popup.innerHTML = `
-    <div class="kid-photo-wrap happy-wrap">
-      ${happyPhoto ? `<img src="${happyPhoto}" alt="Happy celebration">` : `<span class="fallback-happy" aria-hidden="true">Yay</span>`}
-      <span class="sparkle s1"></span>
-      <span class="sparkle s2"></span>
-      <span class="sparkle s3"></span>
-    </div>
+    ${shauryaSmiley("happy")}
     <strong>${message}</strong>
   `;
   document.body.appendChild(popup);
@@ -1443,19 +1398,11 @@ function showHappySuccess(message) {
 function showSillyWrong() {
   const oldPopup = activity.querySelector(".silly-wrong");
   if (oldPopup) oldPopup.remove();
-  const sadPhoto = readText("brightstepsSadPhoto") || defaultKidFace;
   const popup = document.createElement("div");
   popup.className = "silly-wrong";
   popup.setAttribute("role", "status");
   popup.innerHTML = `
-    <div class="silly-face ${sadPhoto ? "photo-face" : ""}" aria-hidden="true">
-      ${sadPhoto ? `<img src="${sadPhoto}" alt="">` : `
-        <span class="silly-eye"></span>
-        <span class="silly-eye"></span>
-        <span class="silly-mouth">o</span>
-      `}
-      ${sadPhoto ? `<span class="blink-lid"></span>` : ""}
-    </div>
+    ${shauryaSmiley("sad")}
     <strong>Oops!</strong>
     <span>Try another one</span>
     <i style="--pop-left:18%;--pop-delay:0s"></i>
@@ -1465,6 +1412,33 @@ function showSillyWrong() {
   `;
   activity.appendChild(popup);
   setTimeout(() => popup.remove(), 1150);
+}
+
+function shauryaSmiley(mood) {
+  const happy = mood === "happy";
+  return `
+    <div class="shaurya-smiley ${happy ? "is-happy" : "is-sad"}" aria-hidden="true">
+      <span class="curl c1"></span>
+      <span class="curl c2"></span>
+      <span class="curl c3"></span>
+      <span class="curl c4"></span>
+      <span class="curl c5"></span>
+      <span class="curl c6"></span>
+      <span class="face-base">
+        <span class="cheek left-cheek"></span>
+        <span class="cheek right-cheek"></span>
+        <span class="eye left-eye"></span>
+        <span class="eye right-eye"></span>
+        <span class="blink blink-left"></span>
+        <span class="blink blink-right"></span>
+        <span class="nose"></span>
+        <span class="expression-mouth"></span>
+      </span>
+      <span class="sparkle s1"></span>
+      <span class="sparkle s2"></span>
+      <span class="sparkle s3"></span>
+    </div>
+  `;
 }
 
 function showMilestoneCelebration(milestone) {

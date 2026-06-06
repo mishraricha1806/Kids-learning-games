@@ -6,15 +6,12 @@ const files = [
   "app.js",
   "app.webmanifest",
   "sw.js",
-  "icon.svg",
-  "assets/kid-face.jpeg",
-  "assets/kid-face-only.jpeg"
+  "icon.svg"
 ];
 
 await rm("www", { recursive: true, force: true });
 await mkdir("www", { recursive: true });
 
-await mkdir("www/assets", { recursive: true });
 await Promise.all(files.map((file) => copyFile(file, `www/${file}`)));
 
 console.log(`Copied ${files.length} files to www/`);

@@ -89,6 +89,26 @@ const games = {
       meta: "Pop 10 target-color bubbles",
       parent: "A longer color quest gives toddlers repeated practice while the progress bar keeps them motivated.",
       type: "bubbleGarden"
+    },
+    {
+      id: "talking-buddy",
+      title: "Talking Buddy",
+      category: "Pretend",
+      icon: "T",
+      color: "#00a6a6",
+      meta: "Talk, repeat, dance, and learn",
+      parent: "A responsive talking friend encourages language, imitation, listening, and playful emotional learning.",
+      type: "talkingBuddy"
+    },
+    {
+      id: "bubble-gum-pop",
+      title: "Bubble Gum Pop",
+      category: "Arcade",
+      icon: "G",
+      color: "#ef6f6c",
+      meta: "Pop growing gum bubbles",
+      parent: "Fast bubble popping keeps little kids engaged while reinforcing colors and counting.",
+      type: "bubbleGum"
     }
   ],
   little: [
@@ -131,6 +151,16 @@ const games = {
       meta: "Find words that rhyme",
       parent: "Rhyming strengthens phonological awareness, a core early reading skill.",
       type: "rhymes"
+    },
+    {
+      id: "rhyme-band",
+      title: "Rhyme Band",
+      category: "Music",
+      icon: "M",
+      color: "#f5a623",
+      meta: "Play rhymes on piano and guitar",
+      parent: "Simple music play builds listening, rhythm, memory, and sequencing with familiar rhyme melodies.",
+      type: "rhymeBand"
     },
     {
       id: "odd-one-out",
@@ -191,6 +221,46 @@ const games = {
       meta: "Follow 12 stepping stones",
       parent: "A longer ordered-path game builds sequencing, attention, and persistence through a complete route.",
       type: "pathQuest"
+    },
+    {
+      id: "photo-runner",
+      title: "Adventure Run",
+      category: "Arcade",
+      icon: "R",
+      color: "#2eb872",
+      meta: "Easy, medium, and hard runner",
+      parent: "A longer adventure runner uses level-based speed, obstacles, coins, answer gates, and a custom runner photo.",
+      type: "photoRunner"
+    },
+    {
+      id: "robot-builder",
+      title: "Robot Builder",
+      category: "STEM",
+      icon: "B",
+      color: "#8067dc",
+      meta: "Build a robot with 8 smart parts",
+      parent: "A mission-style robot game keeps six-year-olds engaged while practicing letters, numbers, colors, and sequencing.",
+      type: "robotBuilder"
+    },
+    {
+      id: "space-rescue",
+      title: "Space Rescue",
+      category: "Arcade",
+      icon: "S",
+      color: "#3f8cff",
+      meta: "Save stars by tapping answers",
+      parent: "Fast moving space missions combine action with simple math, letter sounds, and visual scanning.",
+      type: "spaceRescue"
+    },
+    {
+      id: "dino-dig",
+      title: "Dino Dig",
+      category: "Quest",
+      icon: "D",
+      color: "#f5a623",
+      meta: "Dig fossils through mini challenges",
+      parent: "A fossil hunt adds collection and discovery to early math, word, and pattern practice.",
+      type: "dinoDig"
     }
   ],
   big: [
@@ -293,6 +363,16 @@ const games = {
       meta: "Collect 6 gems with mixed challenges",
       parent: "A multi-step learning quest blends math, vocabulary, spelling, and logic into a longer play session.",
       type: "questIsland"
+    },
+    {
+      id: "junior-2048",
+      title: "2048 Junior",
+      category: "Puzzle",
+      icon: "2",
+      color: "#3f8cff",
+      meta: "Merge tiles to reach 2048",
+      parent: "A number-merging puzzle builds planning, place value intuition, and persistence.",
+      type: "junior2048"
     }
   ]
 };
@@ -325,12 +405,95 @@ const shapes = [
   { name: "star", svg: '<path d="m50 10 11 25 27 3-20 18 6 27-24-14-24 14 6-27-20-18 27-3Z" fill="#f5c542"></path>' }
 ];
 
+const skillMap = {
+  Colors: "Colors",
+  Shapes: "Shapes",
+  Numbers: "Numbers",
+  Listening: "Listening",
+  Compare: "Logic",
+  Emotions: "Social",
+  Action: "Focus",
+  Quest: "Persistence",
+  Pretend: "Language",
+  Arcade: "Focus",
+  Alphabet: "Reading",
+  Logic: "Logic",
+  Focus: "Memory",
+  Reading: "Reading",
+  Thinking: "Logic",
+  Math: "Math",
+  Science: "Science",
+  Time: "Time",
+  Words: "Vocabulary",
+  Spelling: "Spelling",
+  Puzzle: "Logic",
+  Music: "Music",
+  STEM: "STEM"
+};
+
+function melody(pattern) {
+  return Array.from({ length: 21 }, (_, index) => pattern[index % pattern.length]);
+}
+
+const rhymeSongs = [
+  { title: "Twinkle Star", words: "Twinkle, twinkle, little star", notes: melody(["C", "C", "G", "G", "A", "A", "G"]) },
+  { title: "Mary Lamb", words: "Mary had a little lamb", notes: melody(["E", "D", "C", "D", "E", "E", "E"]) },
+  { title: "Row Boat", words: "Row, row, row your boat", notes: melody(["C", "C", "C", "D", "E", "E", "D"]) },
+  { title: "Rain Rain", words: "Rain, rain, go away", notes: melody(["G", "E", "G", "E", "C", "D", "E"]) },
+  { title: "Baa Baa", words: "Baa baa black sheep", notes: melody(["C", "C", "G", "G", "A", "A", "G"]) },
+  { title: "Hot Cross", words: "Hot cross buns", notes: melody(["E", "D", "C", "E", "D", "C", "C"]) },
+  { title: "London Bridge", words: "London Bridge is falling down", notes: melody(["G", "A", "G", "F", "E", "F", "G"]) },
+  { title: "Old MacDonald", words: "Old MacDonald had a farm", notes: melody(["C", "C", "C", "G", "A", "A", "G"]) },
+  { title: "Itsy Spider", words: "Itsy bitsy spider", notes: melody(["C", "D", "E", "E", "D", "C", "D"]) },
+  { title: "Humpty Dumpty", words: "Humpty Dumpty sat on a wall", notes: melody(["E", "E", "D", "C", "D", "E", "F"]) },
+  { title: "Jack Jill", words: "Jack and Jill went up the hill", notes: melody(["C", "D", "E", "C", "E", "D", "C"]) },
+  { title: "Hickory Dock", words: "Hickory dickory dock", notes: melody(["C", "E", "G", "G", "E", "C", "D"]) },
+  { title: "Little Teapot", words: "I am a little teapot", notes: melody(["C", "D", "E", "F", "G", "E", "C"]) },
+  { title: "Wheels Bus", words: "The wheels on the bus", notes: melody(["G", "G", "E", "F", "G", "A", "G"]) },
+  { title: "Muffin Man", words: "Do you know the muffin man", notes: melody(["C", "D", "E", "C", "D", "E", "G"]) },
+  { title: "Three Mice", words: "Three blind mice", notes: melody(["E", "D", "C", "E", "D", "C", "G"]) },
+  { title: "Ring Roses", words: "Ring around the roses", notes: melody(["C", "C", "D", "E", "G", "E", "D"]) },
+  { title: "Pat Cake", words: "Pat-a-cake, pat-a-cake", notes: melody(["C", "E", "G", "E", "C", "D", "E"]) },
+  { title: "This Old Man", words: "This old man, he played one", notes: melody(["G", "E", "G", "E", "C", "D", "E"]) },
+  { title: "Yankee Doodle", words: "Yankee Doodle went to town", notes: melody(["C", "C", "D", "E", "C", "E", "D"]) },
+  { title: "Polly Kettle", words: "Polly put the kettle on", notes: melody(["E", "F", "G", "E", "F", "G", "A"]) },
+  { title: "Alphabet Song", words: "A B C D E F G", notes: melody(["C", "C", "G", "G", "A", "A", "G"]) },
+  { title: "Good Morning", words: "Good morning to you", notes: melody(["C", "D", "E", "C", "E", "D", "C"]) },
+  { title: "Sleep Baby", words: "Sleep, baby, sleep", notes: melody(["G", "E", "D", "C", "D", "E", "C"]) },
+  { title: "Clap Hands", words: "Clap your hands together", notes: melody(["C", "D", "C", "E", "F", "E", "G"]) }
+];
+
+const musicNotes = {
+  C: 261.63,
+  D: 293.66,
+  E: 329.63,
+  F: 349.23,
+  G: 392.0,
+  A: 440.0,
+  B: 493.88
+};
+
+const curriculum = {
+  tiny: ["Colors", "Shapes", "Sounds", "Big/Small"],
+  little: ["Letters", "Counting", "Patterns", "Rhymes"],
+  big: ["Math", "Spelling", "Vocabulary", "Time", "Science"]
+};
+
 const state = {
   age: "tiny",
   gameId: "color-pop",
   stars: 0,
   totalStars: readNumber("brightstepsTotalStars", 0),
   nextMilestone: readNumber("brightstepsNextMilestone", 50),
+  progress: readJson("brightstepsProgress", {}),
+  settings: {
+    childAge: readStoredText("brightstepsChildAge") || "4-6",
+    sound: readStoredText("brightstepsSound") !== "off",
+    language: readStoredText("brightstepsLanguage") || "en",
+    difficulty: readStoredText("brightstepsDifficulty") || "normal",
+    dailyLimit: readStoredText("brightstepsDailyLimit") || "20",
+    paidUnlock: readStoredText("brightstepsPaidUnlock") === "yes"
+  },
   round: {},
   recent: {},
   memory: { open: [], matched: [] },
@@ -339,6 +502,14 @@ const state = {
   bubble: { target: "", popped: 0, goal: 10 },
   path: { next: 1, done: [] },
   quest: { step: 0, gems: 0, round: null },
+  gum: { target: "", popped: 0 },
+  runner: { score: 0, coins: 0, level: "easy", round: null, jumping: false },
+  robot: { built: [], round: null, level: 1 },
+  space: { rescued: 0, mission: 1, round: null },
+  dino: { bones: [], round: null, fossil: 0 },
+  puzzle2048: { board: [], score: 0 },
+  buddy: { mood: "happy", phrase: "Hello, friend!", stars: 0 },
+  music: { song: 0, next: 0, instrument: "toy" },
   word: { target: "", slots: [] },
   balloon: { target: "", slots: [] }
 };
@@ -351,7 +522,12 @@ const gameTitle = document.querySelector("#gameTitle");
 const categoryLabel = document.querySelector("#categoryLabel");
 const parentNote = document.querySelector("#parentNote");
 const installButton = document.querySelector("#installButton");
+const parentEntry = document.querySelector("#parentEntry");
+const dailyPath = document.querySelector("#dailyPath");
+const modalRoot = document.querySelector("#modalRoot");
 let deferredInstallPrompt = null;
+let buddyAudioUrl = "";
+let musicAudioContext = null;
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -373,6 +549,8 @@ installButton.addEventListener("click", async () => {
   installButton.hidden = true;
 });
 
+parentEntry.addEventListener("click", () => showParentGate());
+
 document.querySelectorAll(".age-button").forEach((button) => {
   button.addEventListener("click", () => {
     state.age = button.dataset.age;
@@ -384,6 +562,14 @@ document.querySelectorAll(".age-button").forEach((button) => {
     state.bubble = { target: "", popped: 0, goal: 10 };
     state.path = { next: 1, done: [] };
     state.quest = { step: 0, gems: 0, round: null };
+    state.gum = { target: "", popped: 0 };
+    state.runner = { score: 0, coins: 0, level: "easy", round: null, jumping: false };
+    state.robot = { built: [], round: null, level: 1 };
+    state.space = { rescued: 0, mission: 1, round: null };
+    state.dino = { bones: [], round: null, fossil: 0 };
+    state.puzzle2048 = { board: [], score: 0 };
+    state.buddy = { mood: "happy", phrase: "Hello, friend!", stars: 0 };
+    state.music = { song: 0, next: 0, instrument: "toy" };
     state.word = { target: "", slots: [] };
     state.balloon = { target: "", slots: [] };
     render();
@@ -395,17 +581,58 @@ function currentGame() {
 }
 
 function speak(text) {
+  if (!state.settings.sound) return;
+  if (window.BrightStepsVoice && typeof window.BrightStepsVoice.speak === "function") {
+    try {
+      if (window.BrightStepsVoice.speak(String(text))) return;
+    } catch (error) {
+      // Fall back to browser speech below when the native Android voice is unavailable.
+    }
+  }
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   const voice = new SpeechSynthesisUtterance(text);
-  voice.rate = 0.9;
-  voice.pitch = 1.15;
+  const kidVoice = chooseKidVoice();
+  if (kidVoice) voice.voice = kidVoice;
+  voice.rate = 0.88;
+  voice.pitch = 1.55;
+  voice.volume = 1;
   window.speechSynthesis.speak(voice);
+}
+
+function chooseKidVoice() {
+  if (!("speechSynthesis" in window)) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return null;
+  const preferred = [
+    "junior", "child", "kid", "boy", "daniel", "alex", "samantha", "google us english"
+  ];
+  return voices.find((voice) => {
+    const name = `${voice.name} ${voice.lang}`.toLowerCase();
+    return preferred.some((keyword) => name.includes(keyword));
+  }) || voices.find((voice) => voice.lang && voice.lang.toLowerCase().startsWith("en")) || voices[0];
+}
+
+if ("speechSynthesis" in window) {
+  window.speechSynthesis.onvoiceschanged = () => chooseKidVoice();
+}
+
+["pointerdown", "touchstart", "click"].forEach((eventName) => {
+  window.addEventListener(eventName, unlockAudio, { passive: true });
+});
+
+function unlockAudio() {
+  if (!state.settings.sound) return;
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return;
+  if (!musicAudioContext) musicAudioContext = new AudioContext();
+  if (musicAudioContext.state === "suspended") musicAudioContext.resume().catch(() => {});
 }
 
 function cheer(message) {
   state.stars += 1;
   state.totalStars += 1;
+  recordProgress(currentGame());
   stars.textContent = state.stars;
   totalStars.textContent = state.totalStars;
   writeNumber("brightstepsTotalStars", state.totalStars);
@@ -428,7 +655,36 @@ function readNumber(key, fallback) {
   }
 }
 
+function readJson(key, fallback) {
+  try {
+    const value = JSON.parse(window.localStorage.getItem(key));
+    return value && typeof value === "object" ? value : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function writeNumber(key, value) {
+  try {
+    window.localStorage.setItem(key, String(value));
+  } catch {}
+}
+
+function writeJson(key, value) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+}
+
+function readStoredText(key) {
+  try {
+    return window.localStorage.getItem(key) || "";
+  } catch {
+    return "";
+  }
+}
+
+function writeStoredText(key, value) {
   try {
     window.localStorage.setItem(key, String(value));
   } catch {}
@@ -453,6 +709,7 @@ function pickFresh(key, items, signature = (item) => String(item)) {
 
 function render() {
   renderChrome();
+  renderDailyPath();
   const game = currentGame();
   gameTitle.textContent = game.title;
   categoryLabel.textContent = game.category;
@@ -469,16 +726,23 @@ function render() {
   if (game.type === "shapeCatcher") renderShapeCatcher();
   if (game.type === "starTap") renderStarTap();
   if (game.type === "bubbleGarden") renderBubbleGarden();
+  if (game.type === "talkingBuddy") renderTalkingBuddy();
+  if (game.type === "bubbleGum") renderBubbleGum();
   if (game.type === "letters") renderLetters();
   if (game.type === "patterns") renderPatterns();
   if (game.type === "memory") renderMemory();
   if (game.type === "rhymes") renderRhymes();
+  if (game.type === "rhymeBand") renderRhymeBand();
   if (game.type === "odd") renderOdd();
   if (game.type === "trace") renderTrace();
   if (game.type === "letterBalloons") renderLetterBalloons();
   if (game.type === "numberMuncher") renderNumberMuncher();
   if (game.type === "alphabetTrain") renderAlphabetTrain();
   if (game.type === "pathQuest") renderPathQuest();
+  if (game.type === "photoRunner") renderPhotoRunner();
+  if (game.type === "robotBuilder") renderRobotBuilder();
+  if (game.type === "spaceRescue") renderSpaceRescue();
+  if (game.type === "dinoDig") renderDinoDig();
   if (game.type === "math") renderMath();
   if (game.type === "words") renderWords();
   if (game.type === "sort") renderSort();
@@ -489,6 +753,7 @@ function render() {
   if (game.type === "rocketMath") renderRocketMath();
   if (game.type === "wordComets") renderWordComets();
   if (game.type === "questIsland") renderQuestIsland();
+  if (game.type === "junior2048") renderJunior2048();
 }
 
 function renderChrome() {
@@ -516,11 +781,217 @@ function renderChrome() {
       state.bubble = { target: "", popped: 0, goal: 10 };
       state.path = { next: 1, done: [] };
       state.quest = { step: 0, gems: 0, round: null };
+      state.gum = { target: "", popped: 0 };
+      state.runner = { score: 0, coins: 0, level: "easy", round: null, jumping: false };
+      state.robot = { built: [], round: null, level: 1 };
+      state.space = { rescued: 0, mission: 1, round: null };
+      state.dino = { bones: [], round: null, fossil: 0 };
+      state.puzzle2048 = { board: [], score: 0 };
+      state.buddy = { mood: "happy", phrase: "Hello, friend!", stars: 0 };
+      state.music = { song: 0, next: 0, instrument: "toy" };
       state.word = { target: "", slots: [] };
       state.balloon = { target: "", slots: [] };
       render();
     });
   });
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function recordProgress(game) {
+  const skill = skillMap[game.category] || game.category;
+  const today = todayKey();
+  const progress = state.progress;
+  progress.totalStars = (progress.totalStars || 0) + 1;
+  progress.skills = progress.skills || {};
+  progress.skills[skill] = (progress.skills[skill] || 0) + 1;
+  progress.games = progress.games || {};
+  progress.games[game.id] = (progress.games[game.id] || 0) + 1;
+  progress.days = progress.days || {};
+  progress.days[today] = (progress.days[today] || 0) + 1;
+  writeJson("brightstepsProgress", progress);
+  renderDailyPath();
+}
+
+function renderDailyPath() {
+  const todaysGames = games[state.age].slice(0, 3);
+  const completed = todaysGames.filter((game) => state.progress.games && state.progress.games[game.id]).length;
+  dailyPath.innerHTML = `
+    <h2>Daily path</h2>
+    <div class="daily-meter"><span style="width:${(completed / todaysGames.length) * 100}%"></span></div>
+    <p>${completed} / ${todaysGames.length} today</p>
+    <div class="daily-list">
+      ${todaysGames.map((game) => `
+        <button class="daily-chip ${state.progress.games && state.progress.games[game.id] ? "is-done" : ""}" data-daily-game="${game.id}">
+          ${game.title}
+        </button>
+      `).join("")}
+    </div>
+  `;
+  dailyPath.querySelectorAll("[data-daily-game]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.gameId = button.dataset.dailyGame;
+      state.stars = 0;
+      render();
+    });
+  });
+}
+
+function showParentGate() {
+  modalRoot.hidden = false;
+  modalRoot.innerHTML = `
+    <div class="modal-backdrop">
+      <section class="parent-modal" role="dialog" aria-modal="true" aria-label="Parent gate">
+        <button class="modal-close" id="closeParentModal" aria-label="Close">x</button>
+        <h2>Parent gate</h2>
+        <p class="modal-muted">Solve this to enter parent area.</p>
+        <label class="gate-field">
+          <span>7 + 5 = ?</span>
+          <input id="gateAnswer" inputmode="numeric" autocomplete="off">
+        </label>
+        <p class="feedback" id="gateFeedback"></p>
+        <button class="tool-button" id="enterParentArea">Enter</button>
+      </section>
+    </div>
+  `;
+  modalRoot.querySelector("#closeParentModal").addEventListener("click", closeParentModal);
+  modalRoot.querySelector("#enterParentArea").addEventListener("click", () => {
+    const answer = modalRoot.querySelector("#gateAnswer").value.trim();
+    if (answer === "12") {
+      renderParentDashboard();
+    } else {
+      modalRoot.querySelector("#gateFeedback").textContent = "Try again";
+    }
+  });
+}
+
+function closeParentModal() {
+  modalRoot.hidden = true;
+  modalRoot.innerHTML = "";
+}
+
+function renderParentDashboard() {
+  const skills = Object.entries(state.progress.skills || {}).sort((a, b) => b[1] - a[1]);
+  modalRoot.innerHTML = `
+    <div class="modal-backdrop">
+      <section class="parent-modal parent-dashboard" role="dialog" aria-modal="true" aria-label="Parent dashboard">
+        <button class="modal-close" id="closeParentModal" aria-label="Close">x</button>
+        <h2>Parent dashboard</h2>
+        <div class="parent-grid">
+          <article>
+            <h3>Progress summary</h3>
+            <p><strong>${state.totalStars}</strong> total stars</p>
+            <p><strong>${Object.keys(state.progress.days || {}).length}</strong> learning days</p>
+            <div class="skill-list">
+              ${skills.length ? skills.map(([skill, count]) => `<span>${skill}<b>${count}</b></span>`).join("") : "<p>No progress yet.</p>"}
+            </div>
+          </article>
+          <article>
+            <h3>Daily learning path</h3>
+            <p>Age 1-3: ${curriculum.tiny.join(", ")}</p>
+            <p>Age 4-6: ${curriculum.little.join(", ")}</p>
+            <p>Age 7-9: ${curriculum.big.join(", ")}</p>
+          </article>
+          <article>
+            <h3>Settings</h3>
+            <label>Child age
+              <select id="settingAge">
+                ${["1-3", "4-6", "7-9"].map((age) => `<option ${state.settings.childAge === age ? "selected" : ""}>${age}</option>`).join("")}
+              </select>
+            </label>
+            <label>Language
+              <select id="settingLanguage">
+                <option value="en" ${state.settings.language === "en" ? "selected" : ""}>English</option>
+                <option value="hi" ${state.settings.language === "hi" ? "selected" : ""}>Hindi</option>
+              </select>
+            </label>
+            <label>Difficulty
+              <select id="settingDifficulty">
+                ${["easy", "normal", "hard"].map((item) => `<option value="${item}" ${state.settings.difficulty === item ? "selected" : ""}>${item}</option>`).join("")}
+              </select>
+            </label>
+            <label>Daily time limit
+              <select id="settingDailyLimit">
+                ${["10", "20", "30"].map((item) => `<option value="${item}" ${state.settings.dailyLimit === item ? "selected" : ""}>${item} min</option>`).join("")}
+              </select>
+            </label>
+            <label class="check-row"><input id="settingSound" type="checkbox" ${state.settings.sound ? "checked" : ""}> Sound on</label>
+          </article>
+          <article>
+            <h3>Privacy policy</h3>
+            ${privacyPolicyMarkup()}
+          </article>
+          <article>
+            <h3>Ads and unlock</h3>
+            <p>No ads are enabled in this version. A future one-time parent-gated paid unlock can add all games, badges, certificates, and progress tools.</p>
+          </article>
+          <article>
+            <h3>Support</h3>
+            <p>Contact/support: parent support can be added here before store release.</p>
+            <button class="tool-button" id="printCertificate">Print certificate</button>
+            <button class="danger-button" id="resetProgress">Reset progress</button>
+          </article>
+        </div>
+      </section>
+    </div>
+  `;
+  modalRoot.querySelector("#closeParentModal").addEventListener("click", closeParentModal);
+  bindParentSettings();
+  modalRoot.querySelector("#resetProgress").addEventListener("click", resetProgress);
+  modalRoot.querySelector("#printCertificate").addEventListener("click", printCertificate);
+}
+
+function privacyPolicyMarkup() {
+  return `
+    <ul class="privacy-list">
+      <li>We do not collect personal information from children.</li>
+      <li>We do not require login.</li>
+      <li>We do not collect location.</li>
+      <li>We do not use camera, contacts, or personal identifiers.</li>
+      <li>Microphone is used only inside Talking Buddy when a parent allows it, and recordings stay on the device during play.</li>
+      <li>Progress is stored locally on the device.</li>
+      <li>No third-party analytics or third-party advertising are enabled in this version.</li>
+    </ul>
+  `;
+}
+
+function bindParentSettings() {
+  const update = () => {
+    state.settings.childAge = modalRoot.querySelector("#settingAge").value;
+    state.settings.language = modalRoot.querySelector("#settingLanguage").value;
+    state.settings.difficulty = modalRoot.querySelector("#settingDifficulty").value;
+    state.settings.dailyLimit = modalRoot.querySelector("#settingDailyLimit").value;
+    state.settings.sound = modalRoot.querySelector("#settingSound").checked;
+    writeStoredText("brightstepsChildAge", state.settings.childAge);
+    writeStoredText("brightstepsLanguage", state.settings.language);
+    writeStoredText("brightstepsDifficulty", state.settings.difficulty);
+    writeStoredText("brightstepsDailyLimit", state.settings.dailyLimit);
+    writeStoredText("brightstepsSound", state.settings.sound ? "on" : "off");
+  };
+  modalRoot.querySelectorAll("select, #settingSound").forEach((input) => input.addEventListener("change", update));
+}
+
+function resetProgress() {
+  state.progress = {};
+  state.totalStars = 0;
+  state.nextMilestone = 50;
+  writeJson("brightstepsProgress", state.progress);
+  writeNumber("brightstepsTotalStars", 0);
+  writeNumber("brightstepsNextMilestone", 50);
+  render();
+  renderParentDashboard();
+}
+
+function printCertificate() {
+  const certificate = window.open("", "_blank");
+  if (!certificate) return;
+  certificate.document.write(`
+    <html><head><title>BrightSteps Certificate</title><style>body{font-family:Arial,sans-serif;display:grid;place-items:center;min-height:100vh;background:#fff8df}.cert{border:8px solid #3f8cff;padding:48px;text-align:center;max-width:720px}h1{font-size:42px}p{font-size:22px}</style></head>
+    <body><section class="cert"><h1>BrightSteps Learning Star</h1><p>Completed ${state.totalStars} learning stars.</p><p>Keep learning every day.</p></section><script>window.print()</script></body></html>
+  `);
+  certificate.document.close();
 }
 
 function shell(prompt, extra = "") {
@@ -732,6 +1203,242 @@ function renderBubbleGarden() {
   });
 }
 
+function renderTalkingBuddy() {
+  const moodWords = {
+    happy: "I am happy!",
+    dance: "Dance time!",
+    sleepy: "I feel sleepy.",
+    giggle: "That tickles!"
+  };
+  shell("Talk with your buddy", `
+    <div class="buddy-game">
+      <div class="buddy-stage">
+        <div class="talking-buddy is-${state.buddy.mood}" id="talkingBuddy" aria-hidden="true">
+          <span class="buddy-ear left-ear"></span>
+          <span class="buddy-ear right-ear"></span>
+          <span class="buddy-face">
+            <span class="buddy-eye left-eye"></span>
+            <span class="buddy-eye right-eye"></span>
+            <span class="buddy-mouth"></span>
+          </span>
+          <span class="buddy-arm left-arm"></span>
+          <span class="buddy-arm right-arm"></span>
+          <span class="buddy-foot left-foot"></span>
+          <span class="buddy-foot right-foot"></span>
+        </div>
+        <div class="buddy-bubble">${state.buddy.phrase}</div>
+      </div>
+      <div class="buddy-controls">
+        <label class="buddy-input">
+          <span>Say something</span>
+          <input id="buddyPhrase" value="${state.buddy.phrase.replace(/"/g, "&quot;")}" maxlength="42">
+        </label>
+        <button class="tool-button" id="buddyMic">Mic</button>
+        <button class="tool-button" id="buddyRepeat">Repeat</button>
+      </div>
+      <div class="buddy-actions">
+        <button class="choice-button buddy-action" data-buddy="happy"><span class="label">Smile</span></button>
+        <button class="choice-button buddy-action" data-buddy="dance"><span class="label">Dance</span></button>
+        <button class="choice-button buddy-action" data-buddy="giggle"><span class="label">Tickle</span></button>
+        <button class="choice-button buddy-action" data-buddy="sleepy"><span class="label">Sleep</span></button>
+      </div>
+      <div class="buddy-lessons">
+        ${["red", "blue", "green", "yellow"].map((word) => `<button class="tile-button" data-buddy-word="${word}">${word}</button>`).join("")}
+      </div>
+    </div>
+  `);
+  const input = activity.querySelector("#buddyPhrase");
+  input.addEventListener("input", () => {
+    state.buddy.phrase = input.value.trim() || "Hello!";
+    const bubble = activity.querySelector(".buddy-bubble");
+    if (bubble) bubble.textContent = state.buddy.phrase;
+  });
+  activity.querySelector("#buddyRepeat").addEventListener("click", () => {
+    if (buddyAudioUrl) {
+      playBuddyRecording();
+    } else {
+      speakBuddy(state.buddy.phrase);
+    }
+    cheer("Buddy talked");
+  });
+  activity.querySelector("#buddyMic").addEventListener("click", () => recordBuddyVoice());
+  activity.querySelectorAll("[data-buddy]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.buddy.mood = button.dataset.buddy;
+      state.buddy.phrase = moodWords[state.buddy.mood];
+      cheer("Buddy reacts");
+      renderTalkingBuddy();
+      speakBuddy(state.buddy.phrase);
+    });
+  });
+  activity.querySelectorAll("[data-buddy-word]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.buddy.mood = "happy";
+      state.buddy.phrase = `I found ${button.dataset.buddyWord}!`;
+      cheer("Word learned");
+      renderTalkingBuddy();
+      speakBuddy(state.buddy.phrase);
+    });
+  });
+}
+
+function speakBuddy(text) {
+  const buddy = activity.querySelector("#talkingBuddy");
+  if (buddy) {
+    buddy.classList.add("is-talking");
+    setTimeout(() => buddy.classList.remove("is-talking"), 950);
+  }
+  speak(text);
+}
+
+function listenToBuddy() {
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const feedback = document.querySelector("#feedback");
+  if (!Recognition) {
+    recordBuddyVoice();
+    return;
+  }
+  const recognition = new Recognition();
+  let heardSpeech = false;
+  let usedRecorderFallback = false;
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  if (feedback) feedback.textContent = "Listening...";
+  state.buddy.mood = "happy";
+  const buddy = activity.querySelector("#talkingBuddy");
+  if (buddy) buddy.classList.add("is-listening");
+  recognition.addEventListener("result", (event) => {
+    const transcript = event.results[0][0].transcript.trim();
+    if (!transcript) return;
+    heardSpeech = true;
+    state.buddy.phrase = transcript;
+    const input = activity.querySelector("#buddyPhrase");
+    const bubble = activity.querySelector(".buddy-bubble");
+    if (input) input.value = transcript;
+    if (bubble) bubble.textContent = transcript;
+    if (feedback) feedback.textContent = "I heard you";
+    speakBuddy(transcript);
+    cheer("Buddy listened");
+  });
+  recognition.addEventListener("error", () => {
+    usedRecorderFallback = true;
+    recordBuddyVoice();
+  });
+  recognition.addEventListener("end", () => {
+    const activeBuddy = activity.querySelector("#talkingBuddy");
+    if (activeBuddy) activeBuddy.classList.remove("is-listening");
+    if (!heardSpeech && !usedRecorderFallback) recordBuddyVoice();
+  });
+  try {
+    recognition.start();
+  } catch {
+    recordBuddyVoice();
+  }
+}
+
+async function recordBuddyVoice() {
+  const feedback = document.querySelector("#feedback");
+  const buddy = activity.querySelector("#talkingBuddy");
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+    if (feedback) feedback.textContent = "Microphone recording is not available here";
+    showSillyWrong();
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
+    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    const chunks = [];
+    state.buddy.phrase = "I am listening...";
+    const bubble = activity.querySelector(".buddy-bubble");
+    if (bubble) bubble.textContent = state.buddy.phrase;
+    if (feedback) feedback.textContent = "Listening...";
+    if (buddy) buddy.classList.add("is-listening");
+    recorder.addEventListener("dataavailable", (event) => {
+      if (event.data.size) chunks.push(event.data);
+    });
+    recorder.addEventListener("stop", () => {
+      stream.getTracks().forEach((track) => track.stop());
+      if (buddy) buddy.classList.remove("is-listening");
+      const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+      if (buddyAudioUrl) URL.revokeObjectURL(buddyAudioUrl);
+      buddyAudioUrl = URL.createObjectURL(blob);
+      state.buddy.phrase = "I heard your voice!";
+      const currentBubble = activity.querySelector(".buddy-bubble");
+      if (currentBubble) currentBubble.textContent = state.buddy.phrase;
+      if (feedback) feedback.textContent = "Repeating...";
+      playBuddyRecording();
+      cheer("Buddy listened");
+    });
+    recorder.start();
+    setTimeout(() => {
+      if (recorder.state === "recording") recorder.stop();
+    }, 2600);
+  } catch {
+    if (feedback) feedback.textContent = "Please allow microphone";
+    showSillyWrong();
+  }
+}
+
+function playBuddyRecording() {
+  if (!buddyAudioUrl) return;
+  const buddy = activity.querySelector("#talkingBuddy");
+  const audio = new Audio(buddyAudioUrl);
+  if (buddy) buddy.classList.add("is-talking");
+  audio.addEventListener("ended", () => {
+    const activeBuddy = activity.querySelector("#talkingBuddy");
+    if (activeBuddy) activeBuddy.classList.remove("is-talking");
+  });
+  audio.play().catch(() => {
+    const feedback = document.querySelector("#feedback");
+    if (feedback) feedback.textContent = "Tap Mic again to repeat";
+    if (buddy) buddy.classList.remove("is-talking");
+  });
+}
+
+function renderBubbleGum() {
+  if (!state.gum.target) {
+    state.gum.target = pickFresh("bubbleGum", palettes, (color) => color.name).name;
+    state.gum.popped = 0;
+  }
+  const goal = 18;
+  const choices = Array.from({ length: 20 }, (_, index) => palettes[(index + Math.floor(index / 3)) % palettes.length].name);
+  shell(`Pop ${state.gum.target} gum bubbles`, `
+    <div class="quest-progress">
+      <span>${state.gum.popped} / ${goal} pops</span>
+      <span class="progress-track gum-track"><span style="width:${(state.gum.popped / goal) * 100}%"></span></span>
+    </div>
+    <div class="gum-stage">
+      ${shuffle(choices).map((colorName, index) => {
+        const color = palettes.find((item) => item.name === colorName);
+        return `
+          <button class="gum-bubble" style="--gum-x:${5 + (index % 5) * 19}%;--gum-y:${9 + Math.floor(index / 5) * 21}%;--gum-delay:${index * -0.2}s;--gum-color:${color.value}" data-gum="${colorName}" aria-label="${colorName} gum bubble">
+            <span></span>
+          </button>
+        `;
+      }).join("")}
+    </div>
+  `);
+  activity.querySelectorAll("[data-gum]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.dataset.gum === state.gum.target) {
+        button.classList.add("is-popped");
+        state.gum.popped += 1;
+        cheer(state.gum.popped >= goal ? "Mega pop" : "Pop");
+        if (state.gum.popped >= goal) {
+          state.gum = { target: "", popped: 0 };
+          setTimeout(renderBubbleGum, 900);
+        } else {
+          setTimeout(renderBubbleGum, 260);
+        }
+      } else {
+        markWrong(button);
+      }
+    });
+  });
+}
+
 function renderLetters() {
   const target = pickFresh("letters", letterWords, ([letter]) => letter);
   const choices = shuffle([target, ...shuffle(letterWords.filter(([letter]) => letter !== target[0])).slice(0, 5)]);
@@ -831,6 +1538,172 @@ function renderRhymes() {
     </div>
   `);
   bindAnswers(round.answer, renderRhymes);
+}
+
+function renderRhymeBand() {
+  const song = rhymeSongs[state.music.song] || rhymeSongs[0];
+  const targetNote = song.notes[state.music.next];
+  shell(`Play ${song.title}: tap ${targetNote}`, `
+    <div class="music-game">
+      <div class="music-toolbar">
+        <label>
+          <span>Rhyme</span>
+          <select id="songPicker">
+            ${rhymeSongs.map((item, index) => `<option value="${index}" ${index === state.music.song ? "selected" : ""}>${item.title}</option>`).join("")}
+          </select>
+        </label>
+        <div class="music-toggle" aria-label="Choose instrument">
+          <button class="${state.music.instrument === "toy" ? "is-active" : ""}" data-instrument="toy">Toy</button>
+          <button class="${state.music.instrument === "piano" ? "is-active" : ""}" data-instrument="piano">Piano</button>
+          <button class="${state.music.instrument === "guitar" ? "is-active" : ""}" data-instrument="guitar">Guitar</button>
+        </div>
+      </div>
+      <div class="song-card">
+        <strong>${song.words}</strong>
+        <span>${state.music.next} / ${song.notes.length} notes</span>
+      </div>
+      <button class="sound-unlock" id="musicSoundUnlock">Enable sound</button>
+      <div class="note-road">
+        ${song.notes.map((note, index) => `
+          <span class="${index < state.music.next ? "is-played" : ""} ${index === state.music.next ? "is-next" : ""}">${note}</span>
+        `).join("")}
+      </div>
+      ${musicBoard(targetNote)}
+    </div>
+  `);
+  activity.querySelector("#songPicker").addEventListener("change", (event) => {
+    state.music.song = Number(event.target.value);
+    state.music.next = 0;
+    renderRhymeBand();
+  });
+  activity.querySelectorAll("[data-instrument]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.music.instrument = button.dataset.instrument;
+      renderRhymeBand();
+    });
+  });
+  activity.querySelector("#musicSoundUnlock").addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    state.settings.sound = true;
+    writeStoredText("brightstepsSound", "on");
+    playTone("C", "toy");
+    const feedback = document.querySelector("#feedback");
+    if (feedback) feedback.textContent = "Sound on";
+  });
+  activity.querySelectorAll("[data-note]").forEach((button) => {
+    button.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      playRhymeNote(button, song);
+    });
+    button.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") playRhymeNote(button, song);
+    });
+  });
+}
+
+function musicBoard(targetNote) {
+  if (state.music.instrument === "guitar") return guitarBoard(targetNote);
+  if (state.music.instrument === "piano") return pianoBoard(targetNote);
+  return toyMusicBoard(targetNote);
+}
+
+function toyMusicBoard(targetNote) {
+  return `
+    <div class="toy-music-board" aria-label="Toy piano and xylophone board">
+      <div class="toy-bars">
+        ${Object.keys(musicNotes).map((note, index) => `
+          <button class="toy-bar bar-${index + 1} ${note === targetNote ? "is-target" : ""}" style="--bar-size:${100 - index * 6}%" data-note="${note}">
+            <span>${note}</span>
+          </button>
+        `).join("")}
+      </div>
+      <div class="toy-piano">
+        ${Object.keys(musicNotes).map((note) => `
+          <button class="toy-piano-key ${note === targetNote ? "is-target" : ""}" data-note="${note}">
+            <span>${note}</span>
+          </button>
+        `).join("")}
+      </div>
+      <div class="toy-speaker" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+  `;
+}
+
+function pianoBoard(targetNote) {
+  return `
+    <div class="piano-board" aria-label="Piano board">
+      ${Object.keys(musicNotes).map((note) => `
+        <button class="piano-key ${note === targetNote ? "is-target" : ""}" data-note="${note}">
+          <span>${note}</span>
+        </button>
+      `).join("")}
+    </div>
+  `;
+}
+
+function guitarBoard(targetNote) {
+  return `
+    <div class="guitar-board" aria-label="Guitar board">
+      <div class="guitar-neck" aria-hidden="true"></div>
+      ${Object.keys(musicNotes).map((note, index) => `
+        <button class="guitar-string ${note === targetNote ? "is-target" : ""}" style="--string-row:${index}" data-note="${note}">
+          <span>${note}</span>
+        </button>
+      `).join("")}
+    </div>
+  `;
+}
+
+function playRhymeNote(button, song) {
+  const note = button.dataset.note;
+  playTone(note, state.music.instrument);
+  if (note === song.notes[state.music.next]) {
+    button.classList.add("is-correct");
+    state.music.next += 1;
+    if (state.music.next >= song.notes.length) {
+      cheer("Song complete");
+      setTimeout(() => {
+        state.music.next = 0;
+        state.music.song = (state.music.song + 1) % rhymeSongs.length;
+        renderRhymeBand();
+      }, 850);
+    } else {
+      const feedback = document.querySelector("#feedback");
+      if (feedback) feedback.textContent = "Nice note";
+      setTimeout(renderRhymeBand, 280);
+    }
+  } else {
+    markWrong(button);
+  }
+}
+
+function playTone(note, instrument) {
+  if (!state.settings.sound) return;
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext || !musicNotes[note]) return;
+  if (!musicAudioContext) musicAudioContext = new AudioContext();
+  const context = musicAudioContext;
+  if (context.state === "suspended") context.resume();
+  const oscillator = context.createOscillator();
+  const overtone = context.createOscillator();
+  const gain = context.createGain();
+  const duration = instrument === "guitar" ? 0.55 : instrument === "toy" ? 0.72 : 0.38;
+  oscillator.type = instrument === "guitar" ? "triangle" : instrument === "toy" ? "sine" : "sine";
+  overtone.type = "sine";
+  oscillator.frequency.value = musicNotes[note];
+  overtone.frequency.value = musicNotes[note] * (instrument === "toy" ? 2 : 1.5);
+  gain.gain.setValueAtTime(0.0001, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(instrument === "toy" ? 0.28 : 0.22, context.currentTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
+  oscillator.connect(gain);
+  overtone.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start();
+  overtone.start();
+  oscillator.stop(context.currentTime + duration + 0.04);
+  overtone.stop(context.currentTime + duration + 0.04);
 }
 
 function renderOdd() {
@@ -985,6 +1858,372 @@ function renderPathQuest() {
       }
     });
   });
+}
+
+function renderPhotoRunner() {
+  if (!state.runner.round) {
+    state.runner.round = pickFresh(`photoRunner-${state.runner.level}`, runnerRoundsForLevel(state.runner.level), (round) => round.prompt);
+  }
+  const config = runnerLevelConfig(state.runner.level);
+  const round = state.runner.round;
+  const runnerPhoto = readStoredText("brightstepsRunnerPhoto");
+  shell(`${config.name}: ${round.prompt}`, `
+    <div class="runner-tools">
+      <label class="runner-upload">
+        <span>Runner photo</span>
+        <input id="runnerPhotoInput" type="file" accept="image/*">
+      </label>
+      <span class="runner-score">Score ${state.runner.score} | Coins ${state.runner.coins}</span>
+    </div>
+    <div class="runner-levels" aria-label="Choose runner level">
+      ${["easy", "medium", "hard"].map((level) => `
+        <button class="tile-button ${state.runner.level === level ? "is-active-level" : ""}" data-runner-level="${level}">
+          ${runnerLevelConfig(level).name}
+        </button>
+      `).join("")}
+    </div>
+    <div class="runner-stage adventure-runner" style="--runner-speed:${config.speed}s">
+      <div class="runner-sky" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="runner-path" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="runner-track" aria-hidden="true"></div>
+      <div class="runner-character ${state.runner.jumping ? "is-jumping" : ""}" id="runnerCharacter">
+        ${runnerPhoto
+          ? `<img class="runner-photo" src="${runnerPhoto}" alt="Uploaded runner">`
+          : shauryaSmiley("happy")}
+      </div>
+      <div class="runner-answers">
+        ${shuffle(round.choices).map((choice, index) => `
+          <button class="runner-token" style="--runner-delay:${index * -0.72}s;--runner-lane:${index % 3}" data-runner-answer="${choice}">
+            ${choice}
+          </button>
+        `).join("")}
+      </div>
+      <div class="runner-coins" aria-hidden="true">
+        ${Array.from({ length: config.coins }, (_, index) => `<button class="runner-coin" style="--coin-delay:${index * -0.48}s;--coin-lane:${index % 3}" data-runner-coin="1">$</button>`).join("")}
+      </div>
+      <div class="runner-obstacles" aria-hidden="true">
+        ${Array.from({ length: config.obstacles }, (_, index) => `<button class="runner-obstacle" style="--obstacle-delay:${index * -0.9}s;--obstacle-lane:${(index + 1) % 3}" data-runner-obstacle="1">!</button>`).join("")}
+      </div>
+    </div>
+    <button class="jump-button" id="jumpButton">Jump</button>
+  `);
+  const input = activity.querySelector("#runnerPhotoInput");
+  input.addEventListener("change", () => saveRunnerPhoto(input));
+  activity.querySelectorAll("[data-runner-level]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.runner.level = button.dataset.runnerLevel;
+      state.runner.round = null;
+      renderPhotoRunner();
+    });
+  });
+  activity.querySelector("#jumpButton").addEventListener("click", () => {
+    const character = activity.querySelector("#runnerCharacter");
+    character.classList.remove("is-jumping");
+    window.requestAnimationFrame(() => character.classList.add("is-jumping"));
+    setTimeout(() => collectRunnerJump(round, config), 230);
+  });
+  activity.querySelectorAll("[data-runner-coin]").forEach((button) => {
+    button.addEventListener("click", () => collectRunnerCoin(button));
+  });
+  activity.querySelectorAll("[data-runner-obstacle]").forEach((button) => {
+    button.addEventListener("click", () => markWrong(button));
+  });
+  activity.querySelectorAll("[data-runner-answer]").forEach((button) => {
+    button.addEventListener("click", () => collectRunnerAnswer(button, round, config));
+  });
+}
+
+function collectRunnerJump(round, config) {
+  const character = activity.querySelector("#runnerCharacter");
+  if (!character) return;
+  const characterBox = character.getBoundingClientRect();
+  const jumpZone = {
+    left: characterBox.left - 36,
+    right: characterBox.right + 110,
+    top: characterBox.top - 76,
+    bottom: characterBox.bottom + 50
+  };
+  const candidates = [...activity.querySelectorAll("[data-runner-coin], [data-runner-answer], [data-runner-obstacle]")]
+    .filter((item) => !item.classList.contains("is-collected") && item.offsetParent !== null)
+    .map((item) => ({ item, box: item.getBoundingClientRect() }))
+    .filter(({ box }) => boxesOverlap(jumpZone, box))
+    .sort((a, b) => Math.abs(a.box.left - characterBox.right) - Math.abs(b.box.left - characterBox.right));
+
+  if (!candidates.length) {
+    const feedback = document.querySelector("#feedback");
+    if (feedback) feedback.textContent = "Jump closer";
+    return;
+  }
+
+  const target = candidates[0].item;
+  if (target.dataset.runnerCoin) collectRunnerCoin(target);
+  if (target.dataset.runnerAnswer) collectRunnerAnswer(target, round, config);
+  if (target.dataset.runnerObstacle) markWrong(target);
+}
+
+function boxesOverlap(a, b) {
+  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+}
+
+function collectRunnerCoin(button) {
+  if (button.classList.contains("is-collected")) return;
+  state.runner.coins += 1;
+  button.classList.add("is-collected");
+  if (state.runner.coins % 5 === 0) cheer("Coin bonus");
+  const feedback = document.querySelector("#feedback");
+  if (feedback && state.runner.coins % 5 !== 0) feedback.textContent = "Coin";
+  updateRunnerScore();
+}
+
+function collectRunnerAnswer(button, round, config) {
+  if (button.classList.contains("is-collected")) return;
+  if (button.dataset.runnerAnswer === round.answer) {
+    state.runner.score += config.points;
+    state.runner.round = null;
+    button.classList.add("is-correct", "is-collected");
+    cheer("Run score");
+    setTimeout(renderPhotoRunner, 650);
+  } else {
+    markWrong(button);
+  }
+}
+
+function updateRunnerScore() {
+  const score = activity.querySelector(".runner-score");
+  if (score) score.textContent = `Score ${state.runner.score} | Coins ${state.runner.coins}`;
+}
+
+function runnerLevelConfig(level) {
+  const configs = {
+    easy: { name: "Easy", speed: 7.2, obstacles: 2, coins: 5, points: 1 },
+    medium: { name: "Medium", speed: 5.7, obstacles: 3, coins: 6, points: 2 },
+    hard: { name: "Hard", speed: 4.35, obstacles: 4, coins: 7, points: 3 }
+  };
+  return configs[level] || configs.easy;
+}
+
+function runnerRoundsForLevel(level) {
+  const easy = [
+    { prompt: "Run to the word that starts with B", answer: "ball", choices: ["ball", "sun", "cat", "moon"] },
+    { prompt: "Run to the word that starts with S", answer: "star", choices: ["leaf", "star", "fish", "book"] },
+    { prompt: "Run to the color of grass", answer: "green", choices: ["blue", "red", "green", "yellow"] },
+    { prompt: "Run to the animal word", answer: "tiger", choices: ["chair", "tiger", "cloud", "pencil"] }
+  ];
+  const medium = [
+    { prompt: "Run to 5 + 3", answer: "8", choices: ["6", "7", "8", "9"] },
+    { prompt: "Run to the next letter: A, B, C, ?", answer: "D", choices: ["D", "F", "B", "E"] },
+    { prompt: "Run to the rhyme for cake", answer: "snake", choices: ["snake", "chair", "moon", "fish"] },
+    { prompt: "Run to 12 - 4", answer: "8", choices: ["6", "8", "10", "12"] }
+  ];
+  const hard = [
+    { prompt: "Run to 9 + 7", answer: "16", choices: ["14", "15", "16", "18"] },
+    { prompt: "Run to the synonym for tiny", answer: "small", choices: ["wide", "small", "loud", "late"] },
+    { prompt: "Run to the missing letter: M, N, O, ?", answer: "P", choices: ["P", "Q", "L", "R"] },
+    { prompt: "Run to the word that means begin", answer: "start", choices: ["finish", "carry", "start", "sleep"] }
+  ];
+  if (level === "hard") return hard;
+  if (level === "medium") return medium;
+  return easy;
+}
+
+function saveRunnerPhoto(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    try {
+      window.localStorage.setItem("brightstepsRunnerPhoto", String(reader.result));
+    } catch {}
+    renderPhotoRunner();
+  });
+  reader.readAsDataURL(file);
+}
+
+function renderRobotBuilder() {
+  if (!state.robot.round) {
+    state.robot.round = pickFresh("robotBuilder", robotRounds(), (round) => round.prompt);
+  }
+  const parts = ["head", "eyes", "arms", "wheels", "battery", "antenna", "buttons", "rocket"];
+  const round = state.robot.round;
+  shell(`Robot level ${state.robot.level}: ${round.prompt}`, `
+    <div class="mission-progress">
+      <span>${state.robot.built.length} / ${parts.length} parts</span>
+      <span class="progress-track"><span style="width:${(state.robot.built.length / parts.length) * 100}%"></span></span>
+    </div>
+    <div class="robot-lab">
+      <div class="robot-build" aria-label="Robot being built">
+        <span class="robot-part robot-head ${state.robot.built.includes("head") ? "is-built" : ""}"></span>
+        <span class="robot-part robot-eyes ${state.robot.built.includes("eyes") ? "is-built" : ""}"></span>
+        <span class="robot-part robot-body ${state.robot.built.includes("battery") ? "is-built" : ""}"></span>
+        <span class="robot-part robot-buttons ${state.robot.built.includes("buttons") ? "is-built" : ""}"></span>
+        <span class="robot-part robot-arms ${state.robot.built.includes("arms") ? "is-built" : ""}"></span>
+        <span class="robot-part robot-wheels ${state.robot.built.includes("wheels") ? "is-built" : ""}"></span>
+        <span class="robot-part robot-antenna ${state.robot.built.includes("antenna") ? "is-built" : ""}"></span>
+        <span class="robot-part robot-rocket ${state.robot.built.includes("rocket") ? "is-built" : ""}"></span>
+      </div>
+      <div class="robot-parts">
+        ${shuffle(round.choices).map((choice) => `
+          <button class="robot-chip" data-robot-choice="${choice}">
+            <span>${choice}</span>
+          </button>
+        `).join("")}
+      </div>
+    </div>
+  `);
+  activity.querySelectorAll("[data-robot-choice]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.dataset.robotChoice === round.answer) {
+        const nextPart = parts[state.robot.built.length];
+        state.robot.built.push(nextPart);
+        state.robot.round = null;
+        playTone(["C", "D", "E", "G"][state.robot.built.length % 4], "toy");
+        cheer(state.robot.built.length === parts.length ? "Robot launched" : "Part added");
+        if (state.robot.built.length === parts.length) {
+          state.robot.built = [];
+          state.robot.level += 1;
+          setTimeout(renderRobotBuilder, 900);
+        } else {
+          setTimeout(renderRobotBuilder, 450);
+        }
+      } else {
+        markWrong(button);
+      }
+    });
+  });
+}
+
+function robotRounds() {
+  return [
+    { prompt: "find the letter after B", answer: "C", choices: ["A", "C", "D", "G"] },
+    { prompt: "find 3 + 2", answer: "5", choices: ["4", "5", "6", "8"] },
+    { prompt: "find the color of the sky", answer: "blue", choices: ["red", "blue", "green", "yellow"] },
+    { prompt: "find the word that starts with R", answer: "robot", choices: ["moon", "robot", "fish", "apple"] },
+    { prompt: "find the bigger number", answer: "9", choices: ["3", "6", "9", "4"] },
+    { prompt: "finish A B C ?", answer: "D", choices: ["E", "D", "B", "F"] },
+    { prompt: "find the shape with 3 sides", answer: "triangle", choices: ["circle", "square", "star", "triangle"] },
+    { prompt: "find the rhyme for car", answer: "star", choices: ["star", "fish", "book", "tree"] },
+    { prompt: "find 10 - 4", answer: "6", choices: ["5", "6", "7", "8"] },
+    { prompt: "find the first letter of ball", answer: "B", choices: ["P", "B", "D", "M"] }
+  ];
+}
+
+function renderSpaceRescue() {
+  if (!state.space.round) {
+    state.space.round = pickFresh("spaceRescue", spaceRounds(), (round) => round.prompt);
+  }
+  const round = state.space.round;
+  const goal = 6;
+  shell(`Mission ${state.space.mission}: ${round.prompt}`, `
+    <div class="mission-progress">
+      <span>${state.space.rescued} / ${goal} stars saved</span>
+      <span class="progress-track"><span style="width:${(state.space.rescued / goal) * 100}%"></span></span>
+    </div>
+    <div class="space-stage">
+      <div class="space-ship" aria-hidden="true"><span></span></div>
+      <div class="space-stars" aria-hidden="true">
+        ${Array.from({ length: 18 }, (_, index) => `<span style="--sx:${6 + (index * 17) % 88}%;--sy:${8 + (index * 23) % 76}%;--sd:${index * -0.18}s">*</span>`).join("")}
+      </div>
+      ${shuffle(round.choices).map((choice, index) => `
+        <button class="space-rock" style="--rock-delay:${index * -0.85}s;--rock-lane:${index % 4}" data-space-choice="${choice}">
+          ${choice}
+        </button>
+      `).join("")}
+    </div>
+  `);
+  activity.querySelectorAll("[data-space-choice]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.dataset.spaceChoice === round.answer) {
+        button.classList.add("is-rescued");
+        state.space.rescued += 1;
+        state.space.round = null;
+        playTone(["G", "A", "B"][state.space.rescued % 3], "toy");
+        cheer(state.space.rescued >= goal ? "Mission complete" : "Star rescued");
+        if (state.space.rescued >= goal) {
+          state.space.rescued = 0;
+          state.space.mission += 1;
+        }
+        setTimeout(renderSpaceRescue, 650);
+      } else {
+        markWrong(button);
+      }
+    });
+  });
+}
+
+function spaceRounds() {
+  return [
+    { prompt: "tap 4 + 3", answer: "7", choices: ["6", "7", "8", "9"] },
+    { prompt: "tap the letter after M", answer: "N", choices: ["L", "N", "O", "P"] },
+    { prompt: "tap the word that starts with S", answer: "sun", choices: ["bus", "cat", "sun", "hat"] },
+    { prompt: "tap 8 - 3", answer: "5", choices: ["4", "5", "6", "7"] },
+    { prompt: "tap the rhyme for moon", answer: "spoon", choices: ["spoon", "ball", "cake", "fish"] },
+    { prompt: "tap the missing number 2, 4, ?", answer: "6", choices: ["5", "6", "7", "8"] },
+    { prompt: "tap the color of banana", answer: "yellow", choices: ["blue", "yellow", "green", "red"] },
+    { prompt: "tap the first sound in dog", answer: "D", choices: ["B", "D", "G", "T"] }
+  ];
+}
+
+function renderDinoDig() {
+  if (!state.dino.round) {
+    state.dino.round = pickFresh("dinoDig", dinoRounds(), (round) => round.prompt);
+  }
+  const round = state.dino.round;
+  const bones = ["skull", "neck", "spine", "tail", "leg1", "leg2", "claw1", "claw2"];
+  shell(`Dino dig: ${round.prompt}`, `
+    <div class="mission-progress">
+      <span>${state.dino.bones.length} / ${bones.length} fossils</span>
+      <span class="progress-track"><span style="width:${(state.dino.bones.length / bones.length) * 100}%"></span></span>
+    </div>
+    <div class="dino-dig">
+      <div class="fossil-board" aria-label="Dinosaur fossil">
+        ${bones.map((bone, index) => `<span class="fossil-bone bone-${index + 1} ${state.dino.bones.includes(bone) ? "is-found" : ""}"></span>`).join("")}
+      </div>
+      <div class="dig-choices">
+        ${shuffle(round.choices).map((choice) => `
+          <button class="dig-tile" data-dino-choice="${choice}">
+            <span>${choice}</span>
+          </button>
+        `).join("")}
+      </div>
+    </div>
+  `);
+  activity.querySelectorAll("[data-dino-choice]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.dataset.dinoChoice === round.answer) {
+        const nextBone = bones[state.dino.bones.length];
+        state.dino.bones.push(nextBone);
+        state.dino.round = null;
+        playTone(["C", "E", "G", "A"][state.dino.bones.length % 4], "toy");
+        cheer(state.dino.bones.length === bones.length ? "Dino complete" : "Fossil found");
+        if (state.dino.bones.length === bones.length) {
+          state.dino.bones = [];
+          state.dino.fossil += 1;
+          setTimeout(renderDinoDig, 950);
+        } else {
+          setTimeout(renderDinoDig, 500);
+        }
+      } else {
+        markWrong(button);
+      }
+    });
+  });
+}
+
+function dinoRounds() {
+  return [
+    { prompt: "dig number 6", answer: "6", choices: ["5", "6", "8", "9"] },
+    { prompt: "dig the letter D", answer: "D", choices: ["B", "D", "P", "R"] },
+    { prompt: "dig 2 + 5", answer: "7", choices: ["6", "7", "8", "9"] },
+    { prompt: "dig the animal word", answer: "lion", choices: ["lion", "chair", "shoe", "moon"] },
+    { prompt: "dig the shape with no corners", answer: "circle", choices: ["square", "triangle", "circle", "star"] },
+    { prompt: "dig the missing letter X Y ?", answer: "Z", choices: ["W", "Z", "A", "V"] },
+    { prompt: "dig the smaller number", answer: "3", choices: ["3", "7", "9", "5"] },
+    { prompt: "dig the rhyme for log", answer: "dog", choices: ["dog", "sun", "cap", "tree"] }
+  ];
 }
 
 function renderMath() {
@@ -1291,6 +2530,98 @@ function nextIslandRound() {
     { prompt: "Which means begin?", answer: "start", options: ["finish", "start", "sleep", "close"] }
   ];
   return pickFresh("questIsland", rounds, (round) => round.prompt);
+}
+
+function renderJunior2048() {
+  if (!state.puzzle2048.board.length) init2048();
+  const bestTile = Math.max(...state.puzzle2048.board);
+  shell("Merge matching tiles", `
+    <div class="game-2048">
+      <div class="status-2048">
+        <span>Score ${state.puzzle2048.score}</span>
+        <span>Best ${bestTile}</span>
+      </div>
+      <div class="board-2048" aria-label="2048 board">
+        ${state.puzzle2048.board.map((value) => `<span class="tile-2048 tile-${value || "empty"}">${value || ""}</span>`).join("")}
+      </div>
+      <div class="controls-2048" aria-label="Move tiles">
+        <button class="tool-button" data-move="up">Up</button>
+        <button class="tool-button" data-move="left">Left</button>
+        <button class="tool-button" data-move="right">Right</button>
+        <button class="tool-button" data-move="down">Down</button>
+        <button class="mini-button" id="restart2048">New board</button>
+      </div>
+    </div>
+  `);
+  activity.querySelectorAll("[data-move]").forEach((button) => {
+    button.addEventListener("click", () => move2048(button.dataset.move));
+  });
+  activity.querySelector("#restart2048").addEventListener("click", () => {
+    init2048();
+    renderJunior2048();
+  });
+}
+
+function init2048() {
+  state.puzzle2048.board = Array(16).fill(0);
+  state.puzzle2048.score = 0;
+  add2048Tile();
+  add2048Tile();
+}
+
+function add2048Tile() {
+  const empty = state.puzzle2048.board
+    .map((value, index) => value ? null : index)
+    .filter((index) => index !== null);
+  if (!empty.length) return;
+  const index = pick(empty);
+  state.puzzle2048.board[index] = Math.random() < 0.9 ? 2 : 4;
+}
+
+function move2048(direction) {
+  const before = state.puzzle2048.board.join(",");
+  let gained = 0;
+  const nextBoard = Array(16).fill(0);
+  for (let i = 0; i < 4; i += 1) {
+    const indexes = lineIndexes(direction, i);
+    const values = indexes.map((index) => state.puzzle2048.board[index]);
+    const merged = merge2048Line(values);
+    gained += merged.score;
+    indexes.forEach((index, itemIndex) => {
+      nextBoard[index] = merged.values[itemIndex];
+    });
+  }
+  state.puzzle2048.board = nextBoard;
+  if (state.puzzle2048.board.join(",") === before) return;
+  state.puzzle2048.score += gained;
+  add2048Tile();
+  if (gained > 0) cheer(`Merged ${gained}`);
+  renderJunior2048();
+}
+
+function lineIndexes(direction, line) {
+  if (direction === "left") return [0, 1, 2, 3].map((col) => line * 4 + col);
+  if (direction === "right") return [3, 2, 1, 0].map((col) => line * 4 + col);
+  if (direction === "up") return [0, 1, 2, 3].map((row) => row * 4 + line);
+  return [3, 2, 1, 0].map((row) => row * 4 + line);
+}
+
+function merge2048Line(values) {
+  const compact = values.filter(Boolean);
+  const merged = [];
+  let score = 0;
+  for (let index = 0; index < compact.length; index += 1) {
+    if (compact[index] === compact[index + 1]) {
+      const value = compact[index] * 2;
+      merged.push(value);
+      score += value;
+      index += 1;
+    } else {
+      merged.push(compact[index]);
+    }
+  }
+  while (merged.length < 4) merged.push(0);
+  return { values: merged, score };
 }
 
 function movingStage(items, answer, kind) {

@@ -2,11 +2,13 @@ import { mkdir, copyFile, rm } from "node:fs/promises";
 
 const files = [
   "index.html",
+  "privacy-policy.html",
   "styles.css",
   "app.js",
   "app.webmanifest",
   "sw.js",
-  "icon.svg"
+  "icon.svg",
+  "app-ads.txt"
 ];
 
 await rm("www", { recursive: true, force: true });

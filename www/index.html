@@ -30,12 +30,15 @@
         </div>
 
         <button class="install-button" id="installButton" hidden>Install App</button>
+        <button class="parent-entry" id="parentEntry">Parent area</button>
 
         <section class="age-picker" aria-label="Age range">
           <button class="age-button is-active" data-age="tiny">1-3</button>
           <button class="age-button" data-age="little">4-6</button>
           <button class="age-button" data-age="big">7-9</button>
         </section>
+
+        <section class="daily-path" id="dailyPath" aria-label="Daily learning path"></section>
 
         <nav class="game-list" id="gameList" aria-label="Games"></nav>
 
@@ -61,6 +64,7 @@
         <section class="activity-card" id="activity" aria-label="Current game"></section>
       </section>
     </main>
+    <div class="modal-root" id="modalRoot" hidden></div>
 
     <script src="app.js"></script>
   </body>

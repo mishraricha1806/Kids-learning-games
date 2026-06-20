@@ -1,8 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#f5c542"/>
-  <rect x="70" y="130" width="372" height="278" rx="58" fill="#fffdf8"/>
-  <circle cx="165" cy="245" r="42" fill="#ef6f6c"/>
-  <circle cx="347" cy="245" r="42" fill="#3f8cff"/>
-  <path d="M154 321c54 58 150 58 204 0" fill="none" stroke="#243044" stroke-width="36" stroke-linecap="round"/>
-  <path d="M116 128 72 62M396 128l44-66" stroke="#243044" stroke-width="32" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="sky" x1="72" y1="54" x2="438" y2="464" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5ec7ff"/>
+      <stop offset="0.52" stop-color="#4d8dff"/>
+      <stop offset="1" stop-color="#7357ff"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="173" y1="104" x2="364" y2="342" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff6a6"/>
+      <stop offset="1" stop-color="#ffb83d"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#sky)"/>
+  <path d="M96 386c42-70 91-105 147-105s114 35 173 105v46H96z" fill="#ffffff" opacity="0.96"/>
+  <path d="M128 386h256" stroke="#25304a" stroke-width="20" stroke-linecap="round" opacity="0.15"/>
+  <circle cx="258" cy="223" r="116" fill="url(#sun)"/>
+  <path d="M171 173c24-52 75-76 131-64 45 10 78 41 92 82-32-18-68-20-108-8-42 12-81 9-115-10z" fill="#3b2d4d" opacity="0.22"/>
+  <circle cx="216" cy="220" r="19" fill="#25304a"/>
+  <circle cx="300" cy="220" r="19" fill="#25304a"/>
+  <circle cx="211" cy="213" r="6" fill="#fff"/>
+  <circle cx="295" cy="213" r="6" fill="#fff"/>
+  <path d="M214 277c27 31 70 31 97 0" fill="none" stroke="#25304a" stroke-width="20" stroke-linecap="round"/>
+  <path d="M121 135l14 31 34 4-25 22 7 33-30-17-29 17 7-33-25-22 34-4z" fill="#fff36d"/>
+  <path d="M380 118l10 22 24 3-18 16 5 24-21-12-22 12 5-24-18-16 25-3z" fill="#ff7f91"/>
+  <path d="M154 366c51-28 153-28 204 0" fill="none" stroke="#2eb872" stroke-width="34" stroke-linecap="round"/>
+  <path d="M171 403h62m47 0h62" stroke="#ffcf4a" stroke-width="22" stroke-linecap="round"/>
+  <text x="256" y="442" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="900" fill="#25304a">B</text>
 </svg>

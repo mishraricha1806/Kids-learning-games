@@ -1,8 +1,45 @@
 # BrightSteps Kids Learning Games
 
-BrightSteps is a mobile-friendly learning game app for children ages 1 to 9. It includes quick rounds, animated action games, and longer quest-style activities across colors, shapes, counting, letters, logic, memory, math, reading, science, emotions, time, and vocabulary.
+BrightSteps is a mobile-friendly early learning game app for children ages 1 to 9. It is built for early learning and playful practice, with quick rounds, animated action games, and longer quest-style activities that help kids stay curious while practicing core skills.
 
-Success and try-again feedback use a code-drawn Shaurya smiley character, not a photo asset. Success shows a big happy smile animation; try-again shows a sad expression with blinking eyes.
+The app includes games for colors, shapes, counting, letters, logic, memory, math, reading, science, emotions, time, and vocabulary. It is designed as a privacy-first browser app that can also be packaged for iOS and Android with Capacitor.
+
+## Features
+
+- Age-based game groups for kids 1-3, 4-6, and 7-9.
+- Color, shape, counting, alphabet, spelling, math, time, memory, puzzle, music, and runner games.
+- Daily learning path, stars, milestones, and local progress tracking.
+- Parent area with privacy policy, reset progress, settings, and certificate support.
+- Optional child name greeting stored locally on the device.
+- Offline-friendly browser build with local storage.
+- iOS and Android packaging through Capacitor.
+
+## Screenshots
+
+Add screenshots or a short GIF here before pinning the repository on GitHub. Good examples:
+
+- Home/game library screen.
+- A colorful game screen.
+- Parent dashboard.
+- Mobile/tablet view.
+
+## Mascot
+
+BrightSteps uses an original code-drawn mascot for success and try-again feedback. Success shows a happy celebration animation, while try-again shows a gentle sad/blinking expression.
+
+## GitHub Repo Setup
+
+Suggested repository description:
+
+```text
+Mobile-friendly early learning games for kids with colors, letters, counting, logic, memory, and math.
+```
+
+Suggested topics:
+
+```text
+kids-learning, early-learning, educational-games, children, html-css-javascript, pwa, capacitor, android, ios, privacy-first
+```
 
 ## Run Locally
 

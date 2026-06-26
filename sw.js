@@ -1,4 +1,4 @@
-const CACHE_NAME = "brightsteps-v27";
+const CACHE_NAME = "brightsteps-v34";
 const APP_FILES = [
   "./",
   "./index.html",

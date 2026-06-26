@@ -17,17 +17,28 @@
       <aside class="sidebar" aria-label="Game library">
         <div class="brand">
           <svg class="brand-mark" viewBox="0 0 80 80" aria-hidden="true">
-            <rect x="8" y="18" width="64" height="48" rx="10" fill="#ffffff"></rect>
-            <circle cx="25" cy="37" r="7" fill="#e85d75"></circle>
-            <circle cx="55" cy="37" r="7" fill="#3f8cff"></circle>
-            <path d="M24 51c8 8 24 8 32 0" fill="none" stroke="#25324d" stroke-width="5" stroke-linecap="round"></path>
-            <path d="M18 17 11 7M62 17l7-10" stroke="#25324d" stroke-width="5" stroke-linecap="round"></path>
+            <rect x="6" y="6" width="68" height="68" rx="18" fill="#ffffff" opacity="0.92"></rect>
+            <path d="M20 58c8-13 17-19 28-19s21 6 32 19" fill="#7fe3a1" opacity="0.9"></path>
+            <circle cx="42" cy="34" r="18" fill="#ffcf4a"></circle>
+            <circle cx="35" cy="32" r="3.4" fill="#25324d"></circle>
+            <circle cx="49" cy="32" r="3.4" fill="#25324d"></circle>
+            <path d="M35 42c4 5 11 5 15 0" fill="none" stroke="#25324d" stroke-width="3.8" stroke-linecap="round"></path>
+            <path d="M16 21l3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1z" fill="#ff8a7a"></path>
+            <path d="M62 14l2 5 6 1-4 4 1 6-5-3-5 3 1-6-4-4 6-1z" fill="#3f8cff"></path>
           </svg>
           <div>
             <h1>BrightSteps</h1>
             <p>Ages 1-9</p>
           </div>
         </div>
+
+        <section class="kid-greeting" id="kidGreeting" aria-label="Child greeting">
+          <span class="greeting-sun" aria-hidden="true"></span>
+          <div>
+            <p id="greetingLine">Welcome, friend</p>
+            <button class="name-edit-button" id="editChildName" type="button">Set name</button>
+          </div>
+        </section>
 
         <button class="install-button" id="installButton" hidden>Install App</button>
         <button class="parent-entry" id="parentEntry">Parent area</button>

@@ -261,6 +261,36 @@ const games = {
       meta: "Dig fossils through mini challenges",
       parent: "A fossil hunt adds collection and discovery to early math, word, and pattern practice.",
       type: "dinoDig"
+    },
+    {
+      id: "arrow-puzzle",
+      title: "Arrow Puzzle",
+      category: "Puzzle",
+      icon: ">",
+      color: "#00a6a6",
+      meta: "Reach the star within limited moves",
+      parent: "A level-based arrow maze builds planning, direction sense, and flexible problem solving with limited turns.",
+      type: "arrowPuzzle"
+    },
+    {
+      id: "water-solver",
+      title: "Water Solver",
+      category: "Puzzle",
+      icon: "W",
+      color: "#3f8cff",
+      meta: "Pour colors into matching tubes",
+      parent: "Water sorting strengthens sequencing, planning, and visual grouping through calm, repeatable puzzle levels.",
+      type: "waterSolver"
+    },
+    {
+      id: "line-sort",
+      title: "Line Sort",
+      category: "Puzzle",
+      icon: "=",
+      color: "#8067dc",
+      meta: "Put matching objects in each row",
+      parent: "Object-line sorting helps children plan swaps, compare patterns, and organize similar items together.",
+      type: "lineSort"
     }
   ],
   big: [
@@ -486,6 +516,8 @@ const state = {
   totalStars: readNumber("brightstepsTotalStars", 0),
   nextMilestone: readNumber("brightstepsNextMilestone", 50),
   progress: readJson("brightstepsProgress", {}),
+  childName: readStoredText("brightstepsChildName"),
+  nameSkipped: readStoredText("brightstepsNameSkipped") === "yes",
   settings: {
     childAge: readStoredText("brightstepsChildAge") || "4-6",
     sound: readStoredText("brightstepsSound") !== "off",
@@ -507,6 +539,9 @@ const state = {
   robot: { built: [], round: null, level: 1 },
   space: { rescued: 0, mission: 1, round: null },
   dino: { bones: [], round: null, fossil: 0 },
+  arrowPuzzle: { level: 1, position: null, moves: 0 },
+  waterSolver: { level: 1, tubes: null, selected: null, moves: 0 },
+  lineSort: { level: 1, board: null, selected: null, moves: 0 },
   puzzle2048: { board: [], score: 0 },
   buddy: { mood: "happy", phrase: "Hello, friend!", stars: 0 },
   music: { song: 0, next: 0, instrument: "toy" },
@@ -525,6 +560,8 @@ const installButton = document.querySelector("#installButton");
 const parentEntry = document.querySelector("#parentEntry");
 const dailyPath = document.querySelector("#dailyPath");
 const modalRoot = document.querySelector("#modalRoot");
+const greetingLine = document.querySelector("#greetingLine");
+const editChildName = document.querySelector("#editChildName");
 let deferredInstallPrompt = null;
 let buddyAudioUrl = "";
 let musicAudioContext = null;
@@ -550,6 +587,7 @@ installButton.addEventListener("click", async () => {
 });
 
 parentEntry.addEventListener("click", () => showParentGate());
+editChildName.addEventListener("click", () => showNameSetup());
 
 document.querySelectorAll(".age-button").forEach((button) => {
   button.addEventListener("click", () => {
@@ -567,6 +605,9 @@ document.querySelectorAll(".age-button").forEach((button) => {
     state.robot = { built: [], round: null, level: 1 };
     state.space = { rescued: 0, mission: 1, round: null };
     state.dino = { bones: [], round: null, fossil: 0 };
+    state.arrowPuzzle = { level: 1, position: null, moves: 0 };
+    state.waterSolver = { level: 1, tubes: null, selected: null, moves: 0 };
+    state.lineSort = { level: 1, board: null, selected: null, moves: 0 };
     state.puzzle2048 = { board: [], score: 0 };
     state.buddy = { mood: "happy", phrase: "Hello, friend!", stars: 0 };
     state.music = { song: 0, next: 0, instrument: "toy" };
@@ -710,7 +751,10 @@ function pickFresh(key, items, signature = (item) => String(item)) {
 function render() {
   renderChrome();
   renderDailyPath();
+  updateGreeting();
   const game = currentGame();
+  document.body.dataset.gameTheme = game.category.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  document.body.style.setProperty("--active-game-color", game.color);
   gameTitle.textContent = game.title;
   categoryLabel.textContent = game.category;
   parentNote.textContent = game.parent;
@@ -743,6 +787,9 @@ function render() {
   if (game.type === "robotBuilder") renderRobotBuilder();
   if (game.type === "spaceRescue") renderSpaceRescue();
   if (game.type === "dinoDig") renderDinoDig();
+  if (game.type === "arrowPuzzle") renderArrowPuzzle();
+  if (game.type === "waterSolver") renderWaterSolver();
+  if (game.type === "lineSort") renderLineSort();
   if (game.type === "math") renderMath();
   if (game.type === "words") renderWords();
   if (game.type === "sort") renderSort();
@@ -754,6 +801,114 @@ function render() {
   if (game.type === "wordComets") renderWordComets();
   if (game.type === "questIsland") renderQuestIsland();
   if (game.type === "junior2048") renderJunior2048();
+  maybeShowNameSetup();
+  maybeSpeakOpeningGreeting();
+}
+
+function greetingForDate(date = new Date()) {
+  const hour = date.getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  if (hour < 21) return "Good evening";
+  return "Good night";
+}
+
+function childDisplayName() {
+  return (state.childName || "").trim() || "friend";
+}
+
+function openingGreetingText() {
+  return `${greetingForDate()}, ${childDisplayName()}`;
+}
+
+function updateGreeting() {
+  if (!greetingLine) return;
+  greetingLine.textContent = openingGreetingText();
+  if (editChildName) editChildName.textContent = state.childName ? "Change name" : "Set name";
+}
+
+function maybeShowNameSetup() {
+  if (state.childName || state.nameSkipped || modalRoot.innerHTML) return;
+  window.setTimeout(() => showNameSetup(), 250);
+}
+
+function maybeSpeakOpeningGreeting() {
+  if (!state.childName) return;
+  const today = todayKey();
+  const sessionKey = `brightstepsGreetingSpoken-${today}`;
+  try {
+    if (window.sessionStorage.getItem(sessionKey) === "yes") return;
+    window.sessionStorage.setItem(sessionKey, "yes");
+  } catch {}
+  window.setTimeout(() => speak(openingGreetingText()), 450);
+}
+
+function showNameSetup() {
+  modalRoot.hidden = false;
+  modalRoot.innerHTML = `
+    <div class="modal-backdrop">
+      <section class="parent-modal name-modal" role="dialog" aria-modal="true" aria-label="Child name setup">
+        <h2>Who is playing?</h2>
+        <p class="modal-muted">Add the child's first name for a friendly greeting. It stays only on this device.</p>
+        <label class="gate-field">
+          <span>Child name</span>
+          <input id="childNameInput" autocomplete="off" maxlength="24" value="${escapeAttribute(state.childName)}" placeholder="Shaurya">
+        </label>
+        <p class="feedback" id="nameFeedback"></p>
+        <div class="name-actions">
+          <button class="tool-button" id="saveChildName">Start playing</button>
+          <button class="mini-button" id="skipChildName">Skip</button>
+        </div>
+      </section>
+    </div>
+  `;
+  const input = modalRoot.querySelector("#childNameInput");
+  input.focus();
+  modalRoot.querySelector("#saveChildName").addEventListener("click", saveChildName);
+  modalRoot.querySelector("#skipChildName").addEventListener("click", skipChildName);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") saveChildName();
+  });
+}
+
+function saveChildName() {
+  const input = modalRoot.querySelector("#childNameInput");
+  const feedback = modalRoot.querySelector("#nameFeedback");
+  const name = normalizeChildName(input.value);
+  if (!name) {
+    if (feedback) feedback.textContent = "Please add a name";
+    return;
+  }
+  state.childName = name;
+  state.nameSkipped = false;
+  writeStoredText("brightstepsChildName", name);
+  writeStoredText("brightstepsNameSkipped", "no");
+  closeParentModal();
+  updateGreeting();
+  speak(openingGreetingText());
+}
+
+function skipChildName() {
+  state.nameSkipped = true;
+  writeStoredText("brightstepsNameSkipped", "yes");
+  closeParentModal();
+  updateGreeting();
+}
+
+function normalizeChildName(value) {
+  return String(value || "")
+    .replace(/[^a-zA-Z \-']/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 24);
+}
+
+function escapeAttribute(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 function renderChrome() {
@@ -762,9 +917,10 @@ function renderChrome() {
   });
 
   gameList.innerHTML = games[state.age].map((game) => `
-    <button class="game-button ${game.id === state.gameId ? "is-active" : ""}" data-game="${game.id}">
-      <span class="game-icon" style="background:${game.color}">${game.icon}</span>
+    <button class="game-button ${game.id === state.gameId ? "is-active" : ""}" data-game="${game.id}" style="--game-color:${game.color}">
+      <span class="game-art" aria-hidden="true">${gameVisual(game)}</span>
       <span>
+        <span class="game-category">${game.category}</span>
         <span class="game-name">${game.title}</span>
         <span class="game-meta">${game.meta}</span>
       </span>
@@ -786,6 +942,9 @@ function renderChrome() {
       state.robot = { built: [], round: null, level: 1 };
       state.space = { rescued: 0, mission: 1, round: null };
       state.dino = { bones: [], round: null, fossil: 0 };
+      state.arrowPuzzle = { level: 1, position: null, moves: 0 };
+      state.waterSolver = { level: 1, tubes: null, selected: null, moves: 0 };
+      state.lineSort = { level: 1, board: null, selected: null, moves: 0 };
       state.puzzle2048 = { board: [], score: 0 };
       state.buddy = { mood: "happy", phrase: "Hello, friend!", stars: 0 };
       state.music = { song: 0, next: 0, instrument: "toy" };
@@ -794,6 +953,52 @@ function renderChrome() {
       render();
     });
   });
+}
+
+function gameVisual(game) {
+  const visuals = {
+    colors: `<span class="mini-rainbow"><i></i><i></i><i></i></span>`,
+    shapes: `<span class="mini-shapes"><i></i><i></i><i></i></span>`,
+    count: `<span class="mini-bubbles"><i></i><i></i><i></i></span>`,
+    animals: `<span class="mini-face"><i></i><b></b></span>`,
+    sizes: `<span class="mini-towers"><i></i><i></i></span>`,
+    feelings: `<span class="mini-smile"><i></i><b></b></span>`,
+    shapeCatcher: `<span class="mini-catcher"><i></i><b></b></span>`,
+    starTap: `<span class="mini-star">★</span>`,
+    bubbleGarden: `<span class="mini-bubbles garden"><i></i><i></i><i></i></span>`,
+    talkingBuddy: `<span class="mini-buddy"><i></i><b></b></span>`,
+    bubbleGum: `<span class="mini-gum"><i></i><b></b></span>`,
+    letters: `<span class="mini-letter">A</span>`,
+    patterns: `<span class="mini-pattern"><i></i><i></i><i></i></span>`,
+    memory: `<span class="mini-cards"><i></i><i></i></span>`,
+    rhymes: `<span class="mini-rhyme"><i></i><b></b></span>`,
+    rhymeBand: `<span class="mini-piano"><i></i><i></i><i></i></span>`,
+    odd: `<span class="mini-odd"><i></i><i></i><b></b></span>`,
+    trace: `<span class="mini-path"><i></i><i></i><i></i></span>`,
+    letterBalloons: `<span class="mini-balloon">B</span>`,
+    numberMuncher: `<span class="mini-monster"><i></i><b></b></span>`,
+    alphabetTrain: `<span class="mini-train"><i></i><i></i></span>`,
+    pathQuest: `<span class="mini-map"><i></i><i></i><b></b></span>`,
+    photoRunner: `<span class="mini-runner"><i></i><b></b></span>`,
+    robotBuilder: `<span class="mini-robot"><i></i><b></b></span>`,
+    spaceRescue: `<span class="mini-rocket"><i></i><b></b></span>`,
+    dinoDig: `<span class="mini-dino"><i></i><b></b></span>`,
+    arrowPuzzle: `<span class="mini-arrows"><i></i><b></b></span>`,
+    waterSolver: `<span class="mini-water"><i></i><b></b></span>`,
+    lineSort: `<span class="mini-lines"><i></i><i></i><i></i></span>`,
+    math: `<span class="mini-math">+</span>`,
+    words: `<span class="mini-book"><i></i><b></b></span>`,
+    sort: `<span class="mini-sort"><i></i><b></b></span>`,
+    clock: `<span class="mini-clock"><i></i><b></b></span>`,
+    skip: `<span class="mini-hop"><i></i><i></i><i></i></span>`,
+    vocab: `<span class="mini-book"><i></i><b></b></span>`,
+    spellingBalloons: `<span class="mini-balloon">S</span>`,
+    rocketMath: `<span class="mini-rocket"><i></i><b></b></span>`,
+    wordComets: `<span class="mini-comet"><i></i><b></b></span>`,
+    questIsland: `<span class="mini-island"><i></i><b></b></span>`,
+    junior2048: `<span class="mini-2048">2</span>`
+  };
+  return visuals[game.type] || `<span class="mini-letter">${game.icon}</span>`;
 }
 
 function todayKey() {
@@ -951,6 +1156,7 @@ function privacyPolicyMarkup() {
       <li>We do not collect location.</li>
       <li>We do not use camera, contacts, or personal identifiers.</li>
       <li>Microphone is used only inside Talking Buddy when a parent allows it, and recordings stay on the device during play.</li>
+      <li>An optional child first name can be saved for greetings, and it stays locally on the device.</li>
       <li>Progress is stored locally on the device.</li>
       <li>No third-party analytics or third-party advertising are enabled in this version.</li>
     </ul>
@@ -995,8 +1201,10 @@ function printCertificate() {
 }
 
 function shell(prompt, extra = "") {
+  const game = currentGame();
   activity.innerHTML = `
     <div class="prompt-row">
+      <div class="prompt-mascot" aria-hidden="true">${gameMascot(game)}</div>
       <div>
         <p class="prompt">${prompt}</p>
         <p class="feedback" id="feedback"></p>
@@ -1006,6 +1214,17 @@ function shell(prompt, extra = "") {
     ${extra}
   `;
   document.querySelector("#soundButton").addEventListener("click", () => speak(prompt));
+}
+
+function gameMascot(game) {
+  const type = game && game.type;
+  if (["photoRunner", "arrowPuzzle", "pathQuest"].includes(type)) return `<span class="scene-mascot hero-car"><i></i><b></b></span>`;
+  if (["robotBuilder", "spaceRescue", "rocketMath"].includes(type)) return `<span class="scene-mascot robo-pal"><i></i><b></b></span>`;
+  if (["dinoDig", "animals"].includes(type)) return `<span class="scene-mascot dino-pal"><i></i><b></b></span>`;
+  if (["rhymeBand", "rhyme-time", "rhymes"].includes(type)) return `<span class="scene-mascot music-pal"><i></i><b></b></span>`;
+  if (["waterSolver", "bubbleGarden", "bubbleGum", "count"].includes(type)) return `<span class="scene-mascot bubble-pal"><i></i><b></b></span>`;
+  if (["lineSort", "patterns", "memory", "junior2048"].includes(type)) return `<span class="scene-mascot puzzle-pal"><i></i><b></b></span>`;
+  return `<span class="scene-mascot star-pal"><i></i><b></b></span>`;
 }
 
 function renderColors() {
@@ -1062,7 +1281,7 @@ function renderAnimals() {
     <div class="choice-grid">
       ${shuffle(animals).map((animal) => `
         <button class="choice-button" data-answer="${animal.name}">
-          <span class="big-symbol" style="background:${pick(palettes).value}">${animal.face[0].toUpperCase()}</span>
+          <span class="cute-animal is-${animal.face}" aria-hidden="true"><i></i><b></b></span>
           <span class="label">${animal.name}</span>
         </button>
       `).join("")}
@@ -1093,17 +1312,17 @@ function renderSizes() {
 
 function renderFeelings() {
   const feelings = [
-    { name: "happy", face: ":)" },
-    { name: "sad", face: ":(" },
-    { name: "calm", face: "-_-" },
-    { name: "surprised", face: ":O" }
+    { name: "happy", face: "happy" },
+    { name: "sad", face: "sad" },
+    { name: "calm", face: "calm" },
+    { name: "surprised", face: "surprised" }
   ];
   const target = pickFresh("feelings", feelings, (feeling) => feeling.name);
   shell(`Find ${target.name}`, `
     <div class="choice-grid">
       ${shuffle(feelings).map((feeling) => `
         <button class="choice-button" data-answer="${feeling.name}">
-          <span class="emoji-face">${feeling.face}</span>
+          <span class="feeling-card is-${feeling.face}" aria-hidden="true"><i></i><b></b></span>
           <span class="label">${feeling.name}</span>
         </button>
       `).join("")}
@@ -1169,7 +1388,7 @@ function renderBubbleGarden() {
     state.bubble.popped = 0;
     state.bubble.goal = 10;
   }
-  const choices = Array.from({ length: 16 }, (_, index) => palettes[index % palettes.length].name);
+  const choices = ensureColorChoices(state.bubble.target, 16);
   shell(`Pop ${state.bubble.target} bubbles`, `
     <div class="quest-progress">
       <span>${state.bubble.popped} / ${state.bubble.goal}</span>
@@ -1179,7 +1398,9 @@ function renderBubbleGarden() {
       ${shuffle(choices).map((colorName, index) => {
         const color = palettes.find((item) => item.name === colorName);
         return `
-          <button class="quest-bubble" style="--bubble-x:${6 + (index % 4) * 23}%;--bubble-y:${10 + Math.floor(index / 4) * 21}%;--bubble-delay:${index * -0.3}s;--bubble-color:${color.value}" data-bubble="${colorName}" aria-label="${colorName} bubble"></button>
+          <button class="quest-bubble" style="--bubble-x:${6 + (index % 4) * 23}%;--bubble-y:${10 + Math.floor(index / 4) * 21}%;--bubble-delay:${index * -0.3}s;--bubble-color:${color.value}" data-bubble="${colorName}" aria-label="${colorName} bubble">
+            <span>${colorName[0].toUpperCase()}</span>
+          </button>
         `;
       }).join("")}
     </div>
@@ -1350,10 +1571,10 @@ async function recordBuddyVoice() {
     const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
     const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
     const chunks = [];
-    state.buddy.phrase = "I am listening...";
+    state.buddy.phrase = "I am listening... keep talking!";
     const bubble = activity.querySelector(".buddy-bubble");
     if (bubble) bubble.textContent = state.buddy.phrase;
-    if (feedback) feedback.textContent = "Listening...";
+    if (feedback) feedback.textContent = "Listening for 6 seconds...";
     if (buddy) buddy.classList.add("is-listening");
     recorder.addEventListener("dataavailable", (event) => {
       if (event.data.size) chunks.push(event.data);
@@ -1374,7 +1595,7 @@ async function recordBuddyVoice() {
     recorder.start();
     setTimeout(() => {
       if (recorder.state === "recording") recorder.stop();
-    }, 2600);
+    }, 6000);
   } catch {
     if (feedback) feedback.textContent = "Please allow microphone";
     showSillyWrong();
@@ -1403,7 +1624,7 @@ function renderBubbleGum() {
     state.gum.popped = 0;
   }
   const goal = 18;
-  const choices = Array.from({ length: 20 }, (_, index) => palettes[(index + Math.floor(index / 3)) % palettes.length].name);
+  const choices = ensureColorChoices(state.gum.target, 20);
   shell(`Pop ${state.gum.target} gum bubbles`, `
     <div class="quest-progress">
       <span>${state.gum.popped} / ${goal} pops</span>
@@ -1414,7 +1635,7 @@ function renderBubbleGum() {
         const color = palettes.find((item) => item.name === colorName);
         return `
           <button class="gum-bubble" style="--gum-x:${5 + (index % 5) * 19}%;--gum-y:${9 + Math.floor(index / 5) * 21}%;--gum-delay:${index * -0.2}s;--gum-color:${color.value}" data-gum="${colorName}" aria-label="${colorName} gum bubble">
-            <span></span>
+            <span>${colorName[0].toUpperCase()}</span>
           </button>
         `;
       }).join("")}
@@ -1437,6 +1658,19 @@ function renderBubbleGum() {
       }
     });
   });
+}
+
+function ensureColorChoices(target, count) {
+  const base = Array.from({ length: count }, (_, index) => palettes[(index + Math.floor(index / 3)) % palettes.length].name);
+  const minimumTargets = Math.min(5, count);
+  let currentTargetCount = base.filter((color) => color === target).length;
+  for (let index = 0; currentTargetCount < minimumTargets && index < base.length; index += 1) {
+    if (base[index] !== target) {
+      base[index] = target;
+      currentTargetCount += 1;
+    }
+  }
+  return shuffle(base);
 }
 
 function renderLetters() {
@@ -1893,7 +2127,7 @@ function renderPhotoRunner() {
       <div class="runner-character ${state.runner.jumping ? "is-jumping" : ""}" id="runnerCharacter">
         ${runnerPhoto
           ? `<img class="runner-photo" src="${runnerPhoto}" alt="Uploaded runner">`
-          : shauryaSmiley("happy")}
+          : runnerMascot()}
       </div>
       <div class="runner-answers">
         ${shuffle(round.choices).map((choice, index) => `
@@ -2226,6 +2460,286 @@ function dinoRounds() {
   ];
 }
 
+function renderArrowPuzzle() {
+  const level = arrowLevels()[state.arrowPuzzle.level - 1] || arrowLevels()[0];
+  if (!state.arrowPuzzle.position) {
+    state.arrowPuzzle.position = { ...level.start };
+    state.arrowPuzzle.moves = 0;
+  }
+  const used = state.arrowPuzzle.moves;
+  const left = level.maxMoves - used;
+  shell(`Arrow level ${state.arrowPuzzle.level}: reach the star`, `
+    <div class="puzzle-status">
+      <span>Level ${state.arrowPuzzle.level} / 12</span>
+      <span>${left} moves left</span>
+    </div>
+    <div class="arrow-play">
+      <div class="arrow-grid" style="--grid-size:${level.size}">
+        ${Array.from({ length: level.size * level.size }, (_, index) => {
+          const row = Math.floor(index / level.size);
+          const col = index % level.size;
+          const key = `${row},${col}`;
+          const isBlock = level.blocks.includes(key);
+          const isGoal = row === level.goal.row && col === level.goal.col;
+          const isPlayer = row === state.arrowPuzzle.position.row && col === state.arrowPuzzle.position.col;
+          return `<span class="arrow-cell ${isBlock ? "is-block" : ""} ${isGoal ? "is-goal" : ""} ${isPlayer ? "is-player" : ""}">${isPlayer ? "car" : isGoal ? "*" : isBlock ? "" : ""}</span>`;
+        }).join("")}
+      </div>
+      <div class="arrow-controls" aria-label="Move arrows">
+        <button data-arrow-move="up">↑</button>
+        <button data-arrow-move="left">←</button>
+        <button data-arrow-move="right">→</button>
+        <button data-arrow-move="down">↓</button>
+      </div>
+    </div>
+  `);
+  activity.querySelectorAll("[data-arrow-move]").forEach((button) => {
+    button.addEventListener("click", () => moveArrowPlayer(button.dataset.arrowMove, level));
+  });
+}
+
+function moveArrowPlayer(direction, level) {
+  const deltas = {
+    up: [-1, 0],
+    down: [1, 0],
+    left: [0, -1],
+    right: [0, 1]
+  };
+  const [dr, dc] = deltas[direction];
+  const next = {
+    row: state.arrowPuzzle.position.row + dr,
+    col: state.arrowPuzzle.position.col + dc
+  };
+  const out = next.row < 0 || next.col < 0 || next.row >= level.size || next.col >= level.size;
+  const blocked = level.blocks.includes(`${next.row},${next.col}`);
+  if (out || blocked) {
+    const feedback = document.querySelector("#feedback");
+    if (feedback) feedback.textContent = "Blocked path";
+    showSillyWrong();
+    return;
+  }
+  state.arrowPuzzle.position = next;
+  state.arrowPuzzle.moves += 1;
+  if (next.row === level.goal.row && next.col === level.goal.col) {
+    cheer("Puzzle solved");
+    state.arrowPuzzle.level = state.arrowPuzzle.level === 12 ? 1 : state.arrowPuzzle.level + 1;
+    state.arrowPuzzle.position = null;
+    setTimeout(renderArrowPuzzle, 850);
+    return;
+  }
+  if (state.arrowPuzzle.moves >= level.maxMoves) {
+    markWrong(activity.querySelector(".arrow-grid"));
+    state.arrowPuzzle.position = { ...level.start };
+    state.arrowPuzzle.moves = 0;
+    setTimeout(renderArrowPuzzle, 650);
+    return;
+  }
+  renderArrowPuzzle();
+}
+
+function arrowLevels() {
+  return [
+    { size: 3, start: { row: 2, col: 0 }, goal: { row: 0, col: 2 }, blocks: [], maxMoves: 12 },
+    { size: 3, start: { row: 2, col: 0 }, goal: { row: 0, col: 2 }, blocks: ["1,1"], maxMoves: 12 },
+    { size: 4, start: { row: 3, col: 0 }, goal: { row: 0, col: 3 }, blocks: ["1,1", "2,2"], maxMoves: 12 },
+    { size: 4, start: { row: 3, col: 1 }, goal: { row: 0, col: 2 }, blocks: ["1,0", "1,1", "2,3"], maxMoves: 12 },
+    { size: 4, start: { row: 3, col: 3 }, goal: { row: 0, col: 0 }, blocks: ["1,2", "2,1"], maxMoves: 12 },
+    { size: 5, start: { row: 4, col: 0 }, goal: { row: 0, col: 4 }, blocks: ["1,1", "1,3", "2,3", "3,1"], maxMoves: 12 },
+    { size: 5, start: { row: 4, col: 2 }, goal: { row: 0, col: 2 }, blocks: ["1,1", "2,1", "2,3", "3,3"], maxMoves: 12 },
+    { size: 5, start: { row: 4, col: 4 }, goal: { row: 0, col: 0 }, blocks: ["0,2", "1,2", "3,1", "3,3"], maxMoves: 12 },
+    { size: 5, start: { row: 2, col: 0 }, goal: { row: 2, col: 4 }, blocks: ["1,1", "2,2", "3,1", "3,3"], maxMoves: 12 },
+    { size: 5, start: { row: 4, col: 1 }, goal: { row: 0, col: 3 }, blocks: ["1,0", "1,1", "2,3", "3,3"], maxMoves: 12 },
+    { size: 5, start: { row: 0, col: 0 }, goal: { row: 4, col: 4 }, blocks: ["0,2", "1,2", "2,0", "3,2"], maxMoves: 12 },
+    { size: 5, start: { row: 4, col: 0 }, goal: { row: 1, col: 4 }, blocks: ["1,1", "2,1", "2,2", "3,3", "4,3"], maxMoves: 12 }
+  ];
+}
+
+function renderWaterSolver() {
+  const level = waterLevels()[state.waterSolver.level - 1] || waterLevels()[0];
+  if (!state.waterSolver.tubes) {
+    state.waterSolver.tubes = level.tubes.map((tube) => [...tube]);
+    state.waterSolver.selected = null;
+    state.waterSolver.moves = 0;
+  }
+  shell(`Water level ${state.waterSolver.level}: sort each color`, `
+    <div class="puzzle-status">
+      <span>Level ${state.waterSolver.level} / 12</span>
+      <span>${state.waterSolver.moves} pours</span>
+    </div>
+    <div class="water-board">
+      ${state.waterSolver.tubes.map((tube, index) => `
+        <button class="water-tube ${state.waterSolver.selected === index ? "is-selected" : ""}" data-tube="${index}" aria-label="Tube ${index + 1}">
+          ${Array.from({ length: 4 }, (_, slot) => {
+            const color = tube[3 - slot] || "";
+            return `<span class="water-slot ${color ? "is-filled" : ""}" style="--water-color:${waterColor(color)}"></span>`;
+          }).join("")}
+        </button>
+      `).join("")}
+    </div>
+  `);
+  activity.querySelectorAll("[data-tube]").forEach((button) => {
+    button.addEventListener("click", () => selectWaterTube(Number(button.dataset.tube)));
+  });
+}
+
+function selectWaterTube(index) {
+  if (state.waterSolver.selected === null) {
+    if (!state.waterSolver.tubes[index].length) return;
+    state.waterSolver.selected = index;
+    renderWaterSolver();
+    return;
+  }
+  if (state.waterSolver.selected === index) {
+    state.waterSolver.selected = null;
+    renderWaterSolver();
+    return;
+  }
+  const from = state.waterSolver.tubes[state.waterSolver.selected];
+  const to = state.waterSolver.tubes[index];
+  const color = from[from.length - 1];
+  const canPour = color && to.length < 4 && (!to.length || to[to.length - 1] === color);
+  if (!canPour) {
+    markWrong(activity.querySelector(`[data-tube="${index}"]`));
+    state.waterSolver.selected = null;
+    renderWaterSolver();
+    return;
+  }
+  to.push(from.pop());
+  state.waterSolver.moves += 1;
+  state.waterSolver.selected = null;
+  playTone("D", "toy");
+  if (waterSolved(state.waterSolver.tubes)) {
+    cheer("Water sorted");
+    state.waterSolver.level = state.waterSolver.level === 12 ? 1 : state.waterSolver.level + 1;
+    state.waterSolver.tubes = null;
+    setTimeout(renderWaterSolver, 850);
+  } else {
+    renderWaterSolver();
+  }
+}
+
+function waterSolved(tubes) {
+  return tubes.every((tube) => !tube.length || (tube.length === 4 && tube.every((color) => color === tube[0])));
+}
+
+function waterColor(color) {
+  const colors = {
+    red: "#ef6f6c",
+    blue: "#3f8cff",
+    green: "#2eb872",
+    yellow: "#f5c542",
+    purple: "#8067dc",
+    teal: "#00a6a6"
+  };
+  return colors[color] || "transparent";
+}
+
+function waterLevels() {
+  return [
+    { tubes: [["red", "red", "red", "blue"], ["blue", "blue", "blue", "red"], []] },
+    { tubes: [["green", "green", "yellow", "yellow"], ["yellow", "yellow", "green", "green"], [], []] },
+    { tubes: [["red", "blue", "blue", "red"], ["blue", "red", "red", "blue"], [], []] },
+    { tubes: [["red", "red", "green", "blue"], ["green", "blue", "blue", "red"], ["blue", "green", "green", "red"], [], []] },
+    { tubes: [["yellow", "red", "red", "green"], ["red", "green", "yellow", "green"], ["yellow", "green", "red", "yellow"], [], []] },
+    { tubes: [["blue", "purple", "blue", "purple"], ["purple", "blue", "purple", "blue"], [], []] },
+    { tubes: [["red", "green", "blue", "yellow"], ["green", "red", "yellow", "blue"], ["yellow", "blue", "green", "red"], ["blue", "yellow", "red", "green"], [], []] },
+    { tubes: [["teal", "teal", "red", "blue"], ["red", "blue", "teal", "red"], ["blue", "red", "blue", "teal"], [], []] },
+    { tubes: [["purple", "yellow", "green", "purple"], ["green", "purple", "yellow", "green"], ["yellow", "green", "purple", "yellow"], [], []] },
+    { tubes: [["red", "blue", "green", "purple"], ["blue", "green", "purple", "red"], ["green", "purple", "red", "blue"], ["purple", "red", "blue", "green"], [], []] },
+    { tubes: [["teal", "yellow", "blue", "red"], ["yellow", "blue", "red", "teal"], ["blue", "red", "teal", "yellow"], ["red", "teal", "yellow", "blue"], [], []] },
+    { tubes: [["red", "green", "purple", "teal"], ["green", "purple", "teal", "yellow"], ["purple", "teal", "yellow", "blue"], ["teal", "yellow", "blue", "red"], ["yellow", "blue", "red", "green"], ["blue", "red", "green", "purple"], [], []] }
+  ];
+}
+
+function renderLineSort() {
+  const level = lineLevels()[state.lineSort.level - 1] || lineLevels()[0];
+  if (!state.lineSort.board) {
+    state.lineSort.board = [...level.board];
+    state.lineSort.selected = null;
+    state.lineSort.moves = 0;
+  }
+  shell(`Line level ${state.lineSort.level}: make every row match`, `
+    <div class="puzzle-status">
+      <span>Level ${state.lineSort.level} / 12</span>
+      <span>${state.lineSort.moves} swaps</span>
+    </div>
+    <div class="line-board" style="--line-cols:${level.cols}">
+      ${state.lineSort.board.map((item, index) => `
+        <button class="line-tile ${state.lineSort.selected === index ? "is-selected" : ""}" data-line-index="${index}" style="--tile-color:${lineColor(item)}">
+          <span>${item}</span>
+        </button>
+      `).join("")}
+    </div>
+  `);
+  activity.querySelectorAll("[data-line-index]").forEach((button) => {
+    button.addEventListener("click", () => selectLineTile(Number(button.dataset.lineIndex), level));
+  });
+}
+
+function selectLineTile(index, level) {
+  if (state.lineSort.selected === null) {
+    state.lineSort.selected = index;
+    renderLineSort();
+    return;
+  }
+  if (state.lineSort.selected === index) {
+    state.lineSort.selected = null;
+    renderLineSort();
+    return;
+  }
+  const from = state.lineSort.selected;
+  [state.lineSort.board[from], state.lineSort.board[index]] = [state.lineSort.board[index], state.lineSort.board[from]];
+  state.lineSort.moves += 1;
+  state.lineSort.selected = null;
+  playTone("E", "toy");
+  if (lineSolved(state.lineSort.board, level.cols)) {
+    cheer("Lines matched");
+    state.lineSort.level = state.lineSort.level === 12 ? 1 : state.lineSort.level + 1;
+    state.lineSort.board = null;
+    setTimeout(renderLineSort, 850);
+  } else {
+    renderLineSort();
+  }
+}
+
+function lineSolved(board, cols) {
+  for (let row = 0; row < board.length / cols; row += 1) {
+    const start = row * cols;
+    const items = board.slice(start, start + cols);
+    if (!items.every((item) => item === items[0])) return false;
+  }
+  return true;
+}
+
+function lineColor(item) {
+  const colors = {
+    car: "#3f8cff",
+    ball: "#ef6f6c",
+    star: "#f5c542",
+    tree: "#2eb872",
+    rocket: "#8067dc",
+    fish: "#00a6a6"
+  };
+  return colors[item] || "#eef4fb";
+}
+
+function lineLevels() {
+  return [
+    { cols: 3, board: ["car", "ball", "car", "ball", "car", "ball"] },
+    { cols: 3, board: ["star", "tree", "star", "tree", "star", "tree"] },
+    { cols: 3, board: ["car", "ball", "star", "ball", "star", "car", "star", "car", "ball"] },
+    { cols: 3, board: ["tree", "car", "ball", "ball", "tree", "car", "car", "ball", "tree"] },
+    { cols: 4, board: ["car", "ball", "car", "ball", "car", "ball", "car", "ball"] },
+    { cols: 4, board: ["star", "tree", "rocket", "star", "tree", "rocket", "star", "tree", "rocket", "rocket", "star", "tree"] },
+    { cols: 4, board: ["car", "fish", "ball", "tree", "fish", "ball", "tree", "car", "ball", "tree", "car", "fish", "tree", "car", "fish", "ball"] },
+    { cols: 4, board: ["rocket", "star", "car", "fish", "star", "car", "fish", "rocket", "car", "fish", "rocket", "star", "fish", "rocket", "star", "car"] },
+    { cols: 4, board: ["tree", "tree", "car", "car", "ball", "ball", "star", "star", "tree", "car", "ball", "star", "tree", "car", "ball", "star"] },
+    { cols: 4, board: ["fish", "rocket", "tree", "ball", "rocket", "tree", "ball", "fish", "tree", "ball", "fish", "rocket", "ball", "fish", "rocket", "tree"] },
+    { cols: 4, board: ["car", "ball", "star", "tree", "rocket", "fish", "car", "ball", "star", "tree", "rocket", "fish", "car", "ball", "star", "tree", "rocket", "fish", "car", "ball", "star", "tree", "rocket", "fish"] },
+    { cols: 4, board: ["rocket", "car", "fish", "star", "tree", "ball", "rocket", "car", "fish", "star", "tree", "ball", "rocket", "car", "fish", "star", "tree", "ball", "rocket", "car", "fish", "star", "tree", "ball"] }
+  ];
+}
+
 function renderMath() {
   const rounds = Array.from({ length: 18 }, (_, index) => {
     const a = 3 + (index % 9);
@@ -2252,7 +2766,7 @@ function renderWords() {
   const nextLetter = state.word.target[state.word.slots.length];
   const distractors = "ABCDEILMNOPRSTU".split("").filter((letter) => letter !== nextLetter);
   const letters = shuffle([nextLetter, ...shuffle(distractors).slice(0, 5)]);
-  shell(`Build ${state.word.target}`, `
+  shell(`Build ${state.word.target}: tap ${nextLetter}`, `
     <div class="word-slots">${state.word.target.split("").map((_, index) => `<div class="slot">${state.word.slots[index] || ""}</div>`).join("")}</div>
     <div class="choice-grid">${letters.map((letter) => `<button class="tile-button" data-letter="${letter}">${letter}</button>`).join("")}</div>
   `);
@@ -2713,13 +3227,13 @@ function markWrong(button) {
 }
 
 function showHappySuccess(message) {
-  const oldPopup = activity.querySelector(".kid-success");
+  const oldPopup = document.querySelector(".kid-success");
   if (oldPopup) oldPopup.remove();
   const popup = document.createElement("div");
   popup.className = "kid-success";
   popup.setAttribute("role", "status");
   popup.innerHTML = `
-    ${shauryaSmiley("happy")}
+    ${successMascot()}
     <strong>${message}</strong>
   `;
   document.body.appendChild(popup);
@@ -2733,7 +3247,7 @@ function showSillyWrong() {
   popup.className = "silly-wrong";
   popup.setAttribute("role", "status");
   popup.innerHTML = `
-    ${shauryaSmiley("sad")}
+    ${tryAgainMascot()}
     <strong>Oops!</strong>
     <span>Try another one</span>
     <i style="--pop-left:18%;--pop-delay:0s"></i>
@@ -2745,17 +3259,59 @@ function showSillyWrong() {
   setTimeout(() => popup.remove(), 1150);
 }
 
+function successMascot() {
+  return `
+    <div class="success-mascot" aria-hidden="true">
+      <span class="mascot-eye left-eye"></span>
+      <span class="mascot-eye right-eye"></span>
+      <span class="mascot-mouth"></span>
+      <span class="mascot-arm left-arm"></span>
+      <span class="mascot-arm right-arm"></span>
+      <span class="mascot-spark s1"></span>
+      <span class="mascot-spark s2"></span>
+      <span class="mascot-spark s3"></span>
+    </div>
+  `;
+}
+
+function tryAgainMascot() {
+  return `
+    <div class="retry-mascot" aria-hidden="true">
+      <span class="mascot-eye left-eye"></span>
+      <span class="mascot-eye right-eye"></span>
+      <span class="mascot-mouth"></span>
+      <span class="retry-tear"></span>
+      <span class="mascot-arm left-arm"></span>
+      <span class="mascot-arm right-arm"></span>
+    </div>
+  `;
+}
+
+function runnerMascot() {
+  return `
+    <div class="runner-mascot" aria-hidden="true">
+      <span class="runner-head"></span>
+      <span class="runner-body"></span>
+      <span class="runner-arm left-arm"></span>
+      <span class="runner-arm right-arm"></span>
+      <span class="runner-leg left-leg"></span>
+      <span class="runner-leg right-leg"></span>
+    </div>
+  `;
+}
+
 function shauryaSmiley(mood) {
   const happy = mood === "happy";
   return `
     <div class="shaurya-smiley ${happy ? "is-happy" : "is-sad"}" aria-hidden="true">
-      <span class="curl c1"></span>
-      <span class="curl c2"></span>
-      <span class="curl c3"></span>
-      <span class="curl c4"></span>
-      <span class="curl c5"></span>
-      <span class="curl c6"></span>
+      <span class="kid-hair h1"></span>
+      <span class="kid-hair h2"></span>
+      <span class="kid-hair h3"></span>
+      <span class="kid-hair h4"></span>
+      <span class="kid-hair h5"></span>
       <span class="face-base">
+        <span class="ear left-ear"></span>
+        <span class="ear right-ear"></span>
         <span class="cheek left-cheek"></span>
         <span class="cheek right-cheek"></span>
         <span class="eye left-eye"></span>
@@ -2765,6 +3321,8 @@ function shauryaSmiley(mood) {
         <span class="nose"></span>
         <span class="expression-mouth"></span>
       </span>
+      <span class="tiny-hand left-hand"></span>
+      <span class="tiny-hand right-hand"></span>
       <span class="sparkle s1"></span>
       <span class="sparkle s2"></span>
       <span class="sparkle s3"></span>
